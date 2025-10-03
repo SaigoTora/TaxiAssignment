@@ -25,7 +25,7 @@ export default function GenerateDataForm({
                 type='number'
                 placeholder='Number of taxis'
                 value={inputData.taxiCount ?? ''}
-                min={0}
+                min={1}
                 max={10000}
                 onChange={e =>
                     setInputData({ ...inputData, taxiCount: Number(e.target.value) })
@@ -35,7 +35,7 @@ export default function GenerateDataForm({
                 type='number'
                 placeholder='Number of clients'
                 value={inputData.clientCount ?? ''}
-                min={0}
+                min={1}
                 max={10000}
                 onChange={e =>
                     setInputData({ ...inputData, clientCount: Number(e.target.value) })

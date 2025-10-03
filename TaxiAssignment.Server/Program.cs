@@ -1,28 +1,34 @@
+using TaxiAssignment.Server.Interfaces;
+using TaxiAssignment.Server.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
+builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+builder.Services.AddSingleton<Random>();
+
+builder.Services.AddScoped<IGenerateDataService, GenerateDataService>();
+
+
+builder.Services.AddCors(options =>
+{
+	options.AddDefaultPolicy(policy =>
+	{
+		policy.WithOrigins("http://localhost:5173")
+			  .AllowAnyHeader()
+			  .AllowAnyMethod();
+	});
+});
 
 var app = builder.Build();
 
-app.UseDefaultFiles();
-app.MapStaticAssets();
-
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+	app.UseSwagger();
+	app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
+app.UseCors();
 app.MapControllers();
-
-app.MapFallbackToFile("/index.html");
 
 app.Run();
