@@ -1,10 +1,8 @@
-﻿import { useState } from 'react'
-import GenerateDataForm from './components/GenerateDataForm'
+﻿import GenerateDataForm from './components/GenerateDataForm'
 import { generateData } from './services/assignment'
 import type { GenerateData } from './types/forms'
 
 export default function App() {
-	const [count, setCount] = useState(0)
 	const onGenerate = async (inputData: GenerateData) => {
 		await generateData(inputData)
 	}
