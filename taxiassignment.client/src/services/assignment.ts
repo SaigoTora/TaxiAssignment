@@ -7,7 +7,7 @@ export const generateData = async (inputData: GenerateData) => {
 			'https://localhost:7264/assignment/generate-data',
 			inputData
 		)
-		console.log(response.data)
+
 		return response.data
 	} catch (ex) {
 		console.error(ex)

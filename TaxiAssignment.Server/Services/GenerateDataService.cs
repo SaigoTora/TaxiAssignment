@@ -26,8 +26,8 @@ namespace TaxiAssignment.Server.Services
 
 			for (int i = 0; i < count; i++)
 			{
-				double latitude = GetRandomDouble(-90, 90);
-				double longitude = GetRandomDouble(-180, 180);
+				double latitude = GetRandomDouble(45, 51.5);
+				double longitude = GetRandomDouble(25, 35);
 				taxis[i] = new Taxi(i + 1, latitude, longitude);
 			}
 
@@ -39,8 +39,8 @@ namespace TaxiAssignment.Server.Services
 
 			for (int i = 0; i < count; i++)
 			{
-				double latitude = GetRandomDouble(-90, 90);
-				double longitude = GetRandomDouble(-180, 180);
+				double latitude = GetRandomDouble(45, 51.5);
+				double longitude = GetRandomDouble(25, 35);
 				entities[i] = new Client(i + 1, latitude, longitude);
 			}
 
