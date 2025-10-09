@@ -2,8 +2,8 @@
 {
 	public class Client : PositionedEntity
 	{
-		public Client(int id, double latitude, double longitude)
-			: base(id, latitude, longitude)
+		public Client(int id, Location location)
+			: base(id, location)
 		{ }
 	}
 }

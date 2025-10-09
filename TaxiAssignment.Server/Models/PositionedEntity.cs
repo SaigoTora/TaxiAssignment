@@ -2,18 +2,16 @@
 {
 	public class PositionedEntity : BaseEntity
 	{
-		public double Latitude { get; private set; }
-		public double Longitude { get; private set; }
+		public Location Location { get; private set; }
 
-		public PositionedEntity(int id, double latitude, double longitude)
-			: this(latitude, longitude)
+		public PositionedEntity(int id, Location location)
+			: this(location)
 		{
 			SetId(id);
 		}
-		public PositionedEntity(double latitude, double longitude)
+		public PositionedEntity(Location location)
 		{
-			Latitude = latitude;
-			Longitude = longitude;
+			Location = location;
 		}
 	}
 }

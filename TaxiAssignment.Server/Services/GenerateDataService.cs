@@ -10,8 +10,8 @@ namespace TaxiAssignment.Server.Services
 	{
 		const double MIN_LATITUDE = 50.35;
 		const double MAX_LATITUDE = 50.55;
-		const double MIN_LONGITUDE = 30.35;
-		const double MAX_LONGITUDE = 30.85;
+		const double MIN_LONGITUDE = 30.30;
+		const double MAX_LONGITUDE = 30.78;
 
 		private readonly IRoadPointsService _roadPointsService;
 		private readonly Random _random;
@@ -37,7 +37,10 @@ namespace TaxiAssignment.Server.Services
 			Location[] randomPoints = _roadPointsService.GetRandomPointsForCity(City.Kyiv, count);
 
 			for (int i = 0; i < count; i++)
-				taxis[i] = new Taxi(i + 1, randomPoints[i].Latitude, randomPoints[i].Longitude);
+			{
+				Location location = new(randomPoints[i].Latitude, randomPoints[i].Longitude);
+				taxis[i] = new Taxi(i + 1, location);
+			}
 
 			return taxis;
 		}
@@ -49,7 +52,9 @@ namespace TaxiAssignment.Server.Services
 			{
 				double latitude = GetRandomDouble(MIN_LATITUDE, MAX_LATITUDE);
 				double longitude = GetRandomDouble(MIN_LONGITUDE, MAX_LONGITUDE);
-				entities[i] = new Client(i + 1, latitude, longitude);
+				Location location = new(latitude, longitude);
+
+				entities[i] = new Client(i + 1, location);
 			}
 
 			return entities;
@@ -64,10 +69,10 @@ namespace TaxiAssignment.Server.Services
 			for (int taxiIndex = 0; taxiIndex < taxis.Length; taxiIndex++)
 				for (int clientIndex = 0; clientIndex < clients.Length; clientIndex++)
 				{
-					taxiCoordinate.Latitude = taxis[taxiIndex].Latitude;
-					taxiCoordinate.Longitude = taxis[taxiIndex].Longitude;
-					clientCoordinate.Latitude = clients[clientIndex].Latitude;
-					clientCoordinate.Longitude = clients[clientIndex].Longitude;
+					taxiCoordinate.Latitude = taxis[taxiIndex].Location.Latitude;
+					taxiCoordinate.Longitude = taxis[taxiIndex].Location.Longitude;
+					clientCoordinate.Latitude = clients[clientIndex].Location.Latitude;
+					clientCoordinate.Longitude = clients[clientIndex].Location.Longitude;
 
 					distances[taxiIndex, clientIndex] = taxiCoordinate
 						.GetDistanceTo(clientCoordinate);
