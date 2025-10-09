@@ -26,16 +26,35 @@ export default function App() {
 
 		setTaxiDrivers(
 			data.taxiDrivers.map((t: any) => ({
-				lat: t.location.latitude,
-				lng: t.location.longitude,
 				id: t.id,
+				location: {
+					lat: t.location.latitude,
+					lng: t.location.longitude,
+				},
+				name: t.name,
+				surname: t.surname,
+				age: t.age,
+				phoneNumber: t.phoneNumber,
+				car: {
+					class: t.car.class,
+					brand: t.car.brand,
+					licensePlate: t.car.licensePlate,
+					color: t.car.color,
+					seatsCount: t.car.seatsCount,
+				},
 			}))
 		)
 		setClients(
 			data.clients.map((c: any) => ({
-				lat: c.location.latitude,
-				lng: c.location.longitude,
 				id: c.id,
+				location: {
+					lat: c.location.latitude,
+					lng: c.location.longitude,
+				},
+				name: c.name,
+				surname: c.surname,
+				age: c.age,
+				phoneNumber: c.phoneNumber,
 			}))
 		)
 	}
@@ -64,7 +83,8 @@ export default function App() {
 				color='black'
 				rounded='xl'
 				shadow='md'
-				p='4'
+				paddingBlock='7'
+				paddingInline='10'
 			>
 				<GenerateDataForm onGenerate={onGenerate} />
 			</Box>

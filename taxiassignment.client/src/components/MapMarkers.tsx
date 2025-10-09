@@ -8,7 +8,7 @@ export default function MapMarkers({ map, taxiDrivers, clients }: any) {
 
 		const taxiMarkers = taxiDrivers.map((t: any) => {
 			const marker = new google.maps.Marker({
-				position: t,
+				position: t.location,
 				map,
 				title: 'Taxi',
 				icon: {
@@ -19,7 +19,61 @@ export default function MapMarkers({ map, taxiDrivers, clients }: any) {
 			})
 
 			const infoWindow = new google.maps.InfoWindow({
-				content: `<div class='text-black'><b>Taxi Driver ID:</b> ${t.id}</div>`,
+				content: `
+				<div class="bg-white pt-4 pr-2 pb-1 pl-2 rounded-xl shadow-md max-w-xs font-sans text-gray-800">
+					<div class="font-bold text-center text-base mb-1 cursor-text">
+						${t.name} ${t.surname}, ${t.age}
+					</div>
+					<div class="text-gray-800 mb-3 cursor-text">
+						${t.phoneNumber}
+					</div>
+
+
+					<div class="bg-gray-100 rounded-lg text-sm">
+						<div class="flex items-center justify-between mb-1.5">
+							<span class="font-semibold mr-2 cursor-text">${t.car.brand}</span>
+							<span class="text-xs px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-800 font-medium select-none">
+								${t.car.class}
+							</span>
+						</div>
+
+						<div class="flex items-center justify-between mb-1.5">
+							<span class="flex items-center gap-1 mr-2">
+								<span class="inline-block w-3 h-3 rounded-full border-2" style="background-color: ${t.car.color.toLowerCase()};"></span>
+								<span class="cursor-text">${t.car.color}</span>
+							</span>
+
+							<span class="flex items-center font-mono text-xs bg-white border border-gray-300 rounded-md px-1.5 py-0.5 shadow-sm select-none">
+								<span class="text-blue-600 mr-1 text-[10px]">
+									🇺🇦
+								</span>
+								<span class="tracking-wider font-semibold">
+									${t.car.licensePlate.replace(
+										/^(\w{2})(\d{4})(\w{2})$/,
+										'$1<span class="mx-[1px] inline-block"></span>$2<span class="mx-[1px] inline-block"></span>$3'
+									)}
+								</span>
+							</span>
+						</div>
+
+
+						<div class="text-xs text-gray-500 text-right cursor-text">
+							${t.car.seatsCount} seats
+						</div>
+      		</div>
+				</div>`,
+			})
+
+			infoWindow.addListener('domready', () => {
+				// Hiding the close button
+				const closeBtn = document.querySelector<HTMLButtonElement>(
+					'.gm-ui-hover-effect'
+				)
+				if (closeBtn) closeBtn.style.display = 'none'
+
+				// Hide the top container (gm-style-iw-ch)
+				const header = document.querySelector<HTMLDivElement>('.gm-style-iw-ch')
+				if (header) header.style.display = 'none'
 			})
 
 			allInfoWindows.push(infoWindow)
@@ -34,7 +88,7 @@ export default function MapMarkers({ map, taxiDrivers, clients }: any) {
 
 		const clientMarkers = clients.map((c: any) => {
 			const marker = new google.maps.Marker({
-				position: c,
+				position: c.location,
 				map,
 				title: 'Client',
 				icon: {
@@ -45,7 +99,27 @@ export default function MapMarkers({ map, taxiDrivers, clients }: any) {
 			})
 
 			const infoWindow = new google.maps.InfoWindow({
-				content: `<div class='text-black'><b>Client ID:</b> ${c.id}</div>`,
+				content: `
+				<div class="bg-white pt-4 pr-2 pb-1 pl-2 rounded-xl shadow-md max-w-xs font-sans text-gray-800">
+					<div class="font-bold text-center text-base mb-1">
+						${c.name} ${c.surname}, ${c.age}
+					</div>
+					<div class="text-gray-800 mb-1">
+						${c.phoneNumber}
+					</div>
+				</div>`,
+			})
+
+			infoWindow.addListener('domready', () => {
+				// Hiding the close button
+				const closeBtn = document.querySelector<HTMLButtonElement>(
+					'.gm-ui-hover-effect'
+				)
+				if (closeBtn) closeBtn.style.display = 'none'
+
+				// Hide the top container (gm-style-iw-ch)
+				const header = document.querySelector<HTMLDivElement>('.gm-style-iw-ch')
+				if (header) header.style.display = 'none'
 			})
 
 			allInfoWindows.push(infoWindow)
