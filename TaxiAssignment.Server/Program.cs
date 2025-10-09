@@ -7,9 +7,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddControllers()
 	.AddNewtonsoftJson();
 builder.Services.AddSingleton<Random>();
+builder.Services.AddSingleton<IGenerateDataService, GenerateDataService>();
 builder.Services.AddSingleton<IRoadPointsService, RoadPointsService>();
-
-builder.Services.AddScoped<IGenerateDataService, GenerateDataService>();
 
 builder.Services.AddCors(options =>
 {

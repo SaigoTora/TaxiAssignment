@@ -6,11 +6,6 @@ namespace TaxiAssignment.Server.Services
 {
 	public class GenerateDataService : IGenerateDataService
 	{
-		const double MIN_LATITUDE = 50.35;
-		const double MAX_LATITUDE = 50.55;
-		const double MIN_LONGITUDE = 30.30;
-		const double MAX_LONGITUDE = 30.78;
-
 		private readonly IRoadPointsService _roadPointsService;
 		private readonly Random _random;
 
@@ -32,33 +27,28 @@ namespace TaxiAssignment.Server.Services
 		private TaxiDriver[] GenerateRandomTaxiDrivers(int count)
 		{
 			TaxiDriver[] taxiDrivers = new TaxiDriver[count];
-			Location[] randomPoints = _roadPointsService.GetRandomPointsForCity(City.Kyiv, count);
+			Location[] randomPoints = _roadPointsService.GetRandomPointsOnRoad(City.Kyiv, count);
 
 			for (int i = 0; i < count; i++)
 			{
-				Location location = new(randomPoints[i].Latitude, randomPoints[i].Longitude);
-				taxiDrivers[i] = new TaxiDriver(i + 1, location, "", "", null, "");
+				taxiDrivers[i] = new TaxiDriver(i + 1, randomPoints[i], "", "", null, "");
 			}
 
 			return taxiDrivers;
 		}
 		private Client[] GenerateRandomClients(int count)
 		{
-			Client[] entities = new Client[count];
+			Client[] clients = new Client[count];
+			Location[] randomPoints = _roadPointsService.GetRandomPointsInCity(City.Kyiv, count);
 
 			for (int i = 0; i < count; i++)
 			{
-				double latitude = GetRandomDouble(MIN_LATITUDE, MAX_LATITUDE);
-				double longitude = GetRandomDouble(MIN_LONGITUDE, MAX_LONGITUDE);
-				Location location = new(latitude, longitude);
-
-				entities[i] = new Client(i + 1, location, "", "", null, "");
+				clients[i] = new Client(i + 1, randomPoints[i], "", "", null, "");
 			}
 
-			return entities;
+			return clients;
 		}
-		private double GetRandomDouble(double min, double max)
-			=> _random.NextDouble() * (max - min) + min;
+
 
 		private static double[,] CalculateDistances(TaxiDriver[] taxiDrivers, Client[] clients)
 		{

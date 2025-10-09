@@ -8,8 +8,14 @@ namespace TaxiAssignment.Server.Services
 {
 	public class RoadPointsService : IRoadPointsService
 	{
+		private record CityRoadData(string FileName, List<Location> Points);
+		private record CityBounds(double MinLatitude, double MaxLatitude, double MinLongitude,
+			double MaxLongitude);
+
+
 		private readonly Random _random;
-		private readonly Dictionary<City, (string fileName, List<Location> points)> _cityRoadData;
+		private readonly Dictionary<City, CityRoadData> _cityRoadData;
+		private readonly Dictionary<City, CityBounds> _cityBounds;
 		private readonly List<Location> _kyivPoints;
 
 		public RoadPointsService(Random random)
@@ -17,22 +23,29 @@ namespace TaxiAssignment.Server.Services
 			_random = random;
 			_kyivPoints = [];
 
-			_cityRoadData = new Dictionary<City, (string, List<Location>)>
+			_cityRoadData = new Dictionary<City, CityRoadData>
 			{
-				[City.Kyiv] = ("kyiv_roads.csv", _kyivPoints)
+				[City.Kyiv] = new("kyiv_roads.csv", _kyivPoints)
+			};
+
+			_cityBounds = new Dictionary<City, CityBounds>
+			{
+				[City.Kyiv] = new(50.35, 50.55, 30.30, 30.78)
 			};
 		}
 
-		public Location[] GetRandomPointsForCity(City city, int count)
+		public Location[] GetRandomPointsOnRoad(City city, int count)
 		{
-			(string fileName, List<Location> roadPoints) = _cityRoadData[city];
+			if (!_cityRoadData.TryGetValue(city, out CityRoadData? roadData))
+				throw new KeyNotFoundException($"Road data for city '{city}' was not found.");
 
-			if (roadPoints.Count == 0)
-				LoadPointsFromFile(fileName, roadPoints);
+			List<Location> roadPoints = roadData.Points;
+			if (roadData.Points.Count == 0)
+				LoadPointsFromFile(roadData.FileName, roadPoints);
 
 			if (roadPoints.Count == 0)
 				throw new InvalidOperationException($"No road points loaded from file " +
-					$"'{fileName}' for city {city}");
+					$"'{roadData.FileName}' for city {city}");
 			if (roadPoints.Count < count)
 				throw new InvalidOperationException($"Requested {count} points, but only " +
 					$"{roadPoints.Count} points available for city {city}");
@@ -46,6 +59,25 @@ namespace TaxiAssignment.Server.Services
 
 			return [.. randomPoints];
 		}
+		public Location[] GetRandomPointsInCity(City city, int count)
+		{
+			if (!_cityBounds.TryGetValue(city, out CityBounds? bounds))
+				throw new KeyNotFoundException($"Geographical bounds for city '{city}' " +
+					$"were not found.");
+
+			HashSet<Location> randomPoints = [];
+			bounds = _cityBounds[city];
+
+			while (randomPoints.Count < count)
+			{
+				double latitude = GetRandomDouble(bounds.MinLatitude, bounds.MaxLatitude);
+				double longitude = GetRandomDouble(bounds.MinLongitude, bounds.MaxLongitude);
+				randomPoints.Add(new Location(latitude, longitude));
+			}
+
+			return [.. randomPoints];
+		}
+
 		private static void LoadPointsFromFile(string fileName, List<Location> points)
 		{
 			const char SEPARATOR = '\t';
@@ -70,5 +102,7 @@ namespace TaxiAssignment.Server.Services
 				}
 			}
 		}
+		private double GetRandomDouble(double min, double max)
+			=> _random.NextDouble() * (max - min) + min;
 	}
 }
