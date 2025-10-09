@@ -1,6 +1,4 @@
-﻿using System.Device.Location;
-
-using TaxiAssignment.Server.Contracts;
+﻿using TaxiAssignment.Server.Contracts;
 using TaxiAssignment.Server.Interfaces;
 using TaxiAssignment.Server.Models;
 
@@ -59,29 +57,37 @@ namespace TaxiAssignment.Server.Services
 
 			return entities;
 		}
+		private double GetRandomDouble(double min, double max)
+			=> _random.NextDouble() * (max - min) + min;
+
 		private static double[,] CalculateDistances(Taxi[] taxis, Client[] clients)
 		{
 			double[,] distances = new double[taxis.Length, clients.Length];
 
-			GeoCoordinate taxiCoordinate = new();
-			GeoCoordinate clientCoordinate = new();
-
 			for (int taxiIndex = 0; taxiIndex < taxis.Length; taxiIndex++)
 				for (int clientIndex = 0; clientIndex < clients.Length; clientIndex++)
 				{
-					taxiCoordinate.Latitude = taxis[taxiIndex].Location.Latitude;
-					taxiCoordinate.Longitude = taxis[taxiIndex].Location.Longitude;
-					clientCoordinate.Latitude = clients[clientIndex].Location.Latitude;
-					clientCoordinate.Longitude = clients[clientIndex].Location.Longitude;
-
-					distances[taxiIndex, clientIndex] = taxiCoordinate
-						.GetDistanceTo(clientCoordinate);
+					distances[taxiIndex, clientIndex] =
+						CalculateDistance(taxis[taxiIndex].Location, clients[clientIndex].Location);
 				}
 
 			return distances;
 		}
+		public static double CalculateDistance(Location firstPoint, Location secondPoint)
+		{
+			const double EARTH_RADIUS_METERS = 6376500.0;
 
-		private double GetRandomDouble(double min, double max)
-			=> _random.NextDouble() * (max - min) + min;
+			double deltaLat = secondPoint.LatitudeInRadians - firstPoint.LatitudeInRadians;
+			double deltaLng = secondPoint.LongitudeInRadians - firstPoint.LongitudeInRadians;
+
+			// Haversine formula
+			double haversineLat = Math.Pow(Math.Sin(deltaLat / 2), 2);
+			double haversineLng = Math.Pow(Math.Sin(deltaLng / 2), 2);
+			double h = haversineLat + Math.Cos(firstPoint.LatitudeInRadians) *
+				Math.Cos(secondPoint.LatitudeInRadians) * haversineLng;
+
+			double distance = 2 * Math.Atan2(Math.Sqrt(h), Math.Sqrt(1 - h));
+			return EARTH_RADIUS_METERS * distance;
+		}
 	}
 }

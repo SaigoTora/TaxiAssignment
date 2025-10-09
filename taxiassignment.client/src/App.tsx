@@ -24,15 +24,15 @@ export default function App() {
 
 		setTaxis(
 			data.taxis.map((t: any) => ({
-				lat: t.latitude,
-				lng: t.longitude,
+				lat: t.location.latitude,
+				lng: t.location.longitude,
 				id: t.id,
 			}))
 		)
 		setClients(
 			data.clients.map((c: any) => ({
-				lat: c.latitude,
-				lng: c.longitude,
+				lat: c.location.latitude,
+				lng: c.location.longitude,
 				id: c.id,
 			}))
 		)
@@ -44,8 +44,8 @@ export default function App() {
 		<div className='relative w-full h-screen'>
 			<GoogleMap
 				mapContainerStyle={{ width: '100%', height: '100%' }}
-				center={{ lat: 50.4501, lng: 30.5234 }}
-				zoom={6}
+				center={{ lat: 50.455, lng: 30.55 }}
+				zoom={11}
 				onLoad={mapInstance => setMap(mapInstance)}
 			>
 				{map && <MapMarkers map={map} taxis={taxis} clients={clients} />}

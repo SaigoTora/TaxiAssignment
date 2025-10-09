@@ -1,10 +1,22 @@
-﻿namespace TaxiAssignment.Server.Models
+﻿using Newtonsoft.Json;
+
+namespace TaxiAssignment.Server.Models
 {
 	public class Location
 	{
 		public double Latitude { get; private set; }
 		public double Longitude { get; private set; }
 
+		private const double DegToRad = Math.PI / 180.0;
+
+		[JsonIgnore]
+		public double LatitudeInRadians => Latitude * DegToRad;
+
+		[JsonIgnore]
+		public double LongitudeInRadians => Longitude * DegToRad;
+
+		public Location()
+		{ }
 		public Location(double latitude, double longitude)
 		{
 			Latitude = latitude;
