@@ -1,12 +1,12 @@
 import { useEffect } from 'react'
 
-export default function MapMarkers({ map, taxis, clients }: any) {
+export default function MapMarkers({ map, taxiDrivers, clients }: any) {
 	useEffect(() => {
 		if (!map) return
 
 		const allInfoWindows: google.maps.InfoWindow[] = []
 
-		const taxiMarkers = taxis.map((t: any) => {
+		const taxiMarkers = taxiDrivers.map((t: any) => {
 			const marker = new google.maps.Marker({
 				position: t,
 				map,
@@ -19,7 +19,7 @@ export default function MapMarkers({ map, taxis, clients }: any) {
 			})
 
 			const infoWindow = new google.maps.InfoWindow({
-				content: `<div class='text-black'><b>Taxi ID:</b> ${t.id}</div>`,
+				content: `<div class='text-black'><b>Taxi Driver ID:</b> ${t.id}</div>`,
 			})
 
 			allInfoWindows.push(infoWindow)
@@ -71,7 +71,7 @@ export default function MapMarkers({ map, taxis, clients }: any) {
 			)
 			mapClickListener.remove()
 		}
-	}, [map, taxis, clients])
+	}, [map, taxiDrivers, clients])
 
 	return null
 }

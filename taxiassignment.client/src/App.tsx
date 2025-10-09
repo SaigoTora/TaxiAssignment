@@ -9,7 +9,9 @@ import { useState } from 'react'
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
 
 export default function App() {
-	const [taxis, setTaxis] = useState<{ lat: number; lng: number }[]>([])
+	const [taxiDrivers, setTaxiDrivers] = useState<
+		{ lat: number; lng: number }[]
+	>([])
 	const [clients, setClients] = useState<{ lat: number; lng: number }[]>([])
 	const [map, setMap] = useState<google.maps.Map | null>(null)
 
@@ -22,8 +24,8 @@ export default function App() {
 		const data = await generateData(inputData)
 		if (!data) return
 
-		setTaxis(
-			data.taxis.map((t: any) => ({
+		setTaxiDrivers(
+			data.taxiDrivers.map((t: any) => ({
 				lat: t.location.latitude,
 				lng: t.location.longitude,
 				id: t.id,
@@ -48,7 +50,9 @@ export default function App() {
 				zoom={11}
 				onLoad={mapInstance => setMap(mapInstance)}
 			>
-				{map && <MapMarkers map={map} taxis={taxis} clients={clients} />}
+				{map && (
+					<MapMarkers map={map} taxiDrivers={taxiDrivers} clients={clients} />
+				)}
 			</GoogleMap>
 
 			<Box

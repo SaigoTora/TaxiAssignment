@@ -1,5 +1,5 @@
 export type GenerateData = {
-	taxiCount?: number
+	taxiDriversCount?: number
 	clientCount?: number
 }
 

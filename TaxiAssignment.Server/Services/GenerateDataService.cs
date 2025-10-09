@@ -22,25 +22,25 @@ namespace TaxiAssignment.Server.Services
 
 		public AssignmentData GenerateData(GenerateDataRequest request)
 		{
-			Taxi[] taxis = GenerateRandomTaxis(request.TaxiCount);
+			TaxiDriver[] taxiDrivers = GenerateRandomTaxiDrivers(request.TaxiDriversCount);
 			Client[] clients = GenerateRandomClients(request.ClientCount);
-			double[,] distances = CalculateDistances(taxis, clients);
+			double[,] distances = CalculateDistances(taxiDrivers, clients);
 
-			return new AssignmentData(taxis, clients, distances);
+			return new AssignmentData(taxiDrivers, clients, distances);
 		}
 
-		private Taxi[] GenerateRandomTaxis(int count)
+		private TaxiDriver[] GenerateRandomTaxiDrivers(int count)
 		{
-			Taxi[] taxis = new Taxi[count];
+			TaxiDriver[] taxiDrivers = new TaxiDriver[count];
 			Location[] randomPoints = _roadPointsService.GetRandomPointsForCity(City.Kyiv, count);
 
 			for (int i = 0; i < count; i++)
 			{
 				Location location = new(randomPoints[i].Latitude, randomPoints[i].Longitude);
-				taxis[i] = new Taxi(i + 1, location);
+				taxiDrivers[i] = new TaxiDriver(i + 1, location, "", "", null, "");
 			}
 
-			return taxis;
+			return taxiDrivers;
 		}
 		private Client[] GenerateRandomClients(int count)
 		{
@@ -52,7 +52,7 @@ namespace TaxiAssignment.Server.Services
 				double longitude = GetRandomDouble(MIN_LONGITUDE, MAX_LONGITUDE);
 				Location location = new(latitude, longitude);
 
-				entities[i] = new Client(i + 1, location);
+				entities[i] = new Client(i + 1, location, "", "", null, "");
 			}
 
 			return entities;
@@ -60,15 +60,16 @@ namespace TaxiAssignment.Server.Services
 		private double GetRandomDouble(double min, double max)
 			=> _random.NextDouble() * (max - min) + min;
 
-		private static double[,] CalculateDistances(Taxi[] taxis, Client[] clients)
+		private static double[,] CalculateDistances(TaxiDriver[] taxiDrivers, Client[] clients)
 		{
-			double[,] distances = new double[taxis.Length, clients.Length];
+			double[,] distances = new double[taxiDrivers.Length, clients.Length];
 
-			for (int taxiIndex = 0; taxiIndex < taxis.Length; taxiIndex++)
+			for (int taxiIndex = 0; taxiIndex < taxiDrivers.Length; taxiIndex++)
 				for (int clientIndex = 0; clientIndex < clients.Length; clientIndex++)
 				{
 					distances[taxiIndex, clientIndex] =
-						CalculateDistance(taxis[taxiIndex].Location, clients[clientIndex].Location);
+						CalculateDistance(taxiDrivers[taxiIndex].Location,
+							clients[clientIndex].Location);
 				}
 
 			return distances;

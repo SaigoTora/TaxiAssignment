@@ -2,13 +2,13 @@
 {
 	public class AssignmentData
 	{
-		public Taxi[] Taxis { get; private set; }
+		public TaxiDriver[] TaxiDrivers { get; private set; }
 		public Client[] Clients { get; private set; }
 		public double[,] Distances { get; private set; }
 
-		public AssignmentData(Taxi[] taxis, Client[] clients, double[,] distances)
+		public AssignmentData(TaxiDriver[] taxiDrivers, Client[] clients, double[,] distances)
 		{
-			Taxis = taxis;
+			TaxiDrivers = taxiDrivers;
 			Clients = clients;
 			Distances = distances;
 		}

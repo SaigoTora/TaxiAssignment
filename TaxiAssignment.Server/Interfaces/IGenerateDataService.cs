@@ -6,10 +6,10 @@ namespace TaxiAssignment.Server.Interfaces
 	public interface IGenerateDataService
 	{
 		/// <summary>
-		/// Generates a list of clients and taxis based on the given request.
+		/// Generates a list of clients and taxi drivers based on the given request.
 		/// </summary>
-		/// <param name="request">The number of clients and taxis to generate.</param>
-		/// <returns>An AssignmentData object containing the generated clients and taxis.</returns>
+		/// <param name="request">The number of clients and taxi drivers to generate.</param>
+		/// <returns>An AssignmentData object containing the generated clients and taxi drivers.</returns>
 		AssignmentData GenerateData(GenerateDataRequest request);
 	}
 }
