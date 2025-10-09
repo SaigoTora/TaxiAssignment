@@ -15,7 +15,10 @@ export default function MapMarkers({ map, taxiDrivers, clients }: any) {
 					url: 'https://img.icons8.com/?size=100&id=j2SfqDojO0h4&format=png&color=000000',
 					scaledSize: new google.maps.Size(30, 30),
 				},
-				animation: google.maps.Animation.DROP,
+				animation:
+					taxiDrivers.length + clients.length <= 500
+						? google.maps.Animation.DROP
+						: null,
 			})
 
 			const infoWindow = new google.maps.InfoWindow({
@@ -95,7 +98,10 @@ export default function MapMarkers({ map, taxiDrivers, clients }: any) {
 					url: 'https://img.icons8.com/?size=100&id=9q3GMpxNIMjC&format=png&color=000000',
 					scaledSize: new google.maps.Size(30, 30),
 				},
-				animation: google.maps.Animation.DROP,
+				animation:
+					taxiDrivers.length + clients.length <= 500
+						? google.maps.Animation.DROP
+						: null,
 			})
 
 			const infoWindow = new google.maps.InfoWindow({
