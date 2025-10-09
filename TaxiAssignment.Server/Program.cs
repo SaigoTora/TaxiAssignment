@@ -4,11 +4,12 @@ using TaxiAssignment.Server.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSwaggerGen();
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+	.AddNewtonsoftJson();
 builder.Services.AddSingleton<Random>();
+builder.Services.AddSingleton<IRoadPointsService, RoadPointsService>();
 
 builder.Services.AddScoped<IGenerateDataService, GenerateDataService>();
-
 
 builder.Services.AddCors(options =>
 {
