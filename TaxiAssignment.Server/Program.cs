@@ -1,7 +1,14 @@
+using Serilog;
+
 using TaxiAssignment.Server.Interfaces;
 using TaxiAssignment.Server.Services;
 
+
 var builder = WebApplication.CreateBuilder(args);
+builder.Host.UseSerilog((context, loggerConfig) =>
+{
+	loggerConfig.ReadFrom.Configuration(context.Configuration);
+});
 
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers()
@@ -21,6 +28,9 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+var logger = app.Services.GetRequiredService<ILogger<Program>>();
+logger.LogInformation("Application started and is now listening for requests.");
 
 if (app.Environment.IsDevelopment())
 {
