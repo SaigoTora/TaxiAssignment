@@ -8,7 +8,7 @@ builder.Services.AddControllers()
 	.AddNewtonsoftJson();
 builder.Services.AddSingleton<Random>();
 builder.Services.AddSingleton<IGenerateDataService, GenerateDataService>();
-builder.Services.AddSingleton<IRoadPointsService, RoadPointsService>();
+builder.Services.AddSingleton<IGeoPointsService, GeoPointsService>();
 
 builder.Services.AddCors(options =>
 {

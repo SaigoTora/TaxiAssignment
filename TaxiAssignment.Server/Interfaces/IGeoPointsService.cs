@@ -2,7 +2,7 @@
 
 namespace TaxiAssignment.Server.Interfaces
 {
-	public interface IRoadPointsService
+	public interface IGeoPointsService
 	{
 		/// <summary>
 		/// Returns a specified number of random road points for a given city.

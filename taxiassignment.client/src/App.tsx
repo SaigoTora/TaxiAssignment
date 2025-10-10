@@ -3,7 +3,7 @@ import { GoogleMap, useJsApiLoader } from '@react-google-maps/api'
 import GenerateDataForm from './components/GenerateDataForm'
 import MapMarkers from './components/MapMarkers'
 import { generateData } from './services/assignment'
-import type { GenerateData } from './types/forms'
+import type { City, GenerateData } from './types/forms'
 import { useState } from 'react'
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
@@ -14,6 +14,14 @@ export default function App() {
 	>([])
 	const [clients, setClients] = useState<{ lat: number; lng: number }[]>([])
 	const [map, setMap] = useState<google.maps.Map | null>(null)
+	const [initialCenter] = useState({ lat: 50.455, lng: 30.59 })
+	const [initialZoom] = useState(11)
+
+	const CITY_CENTERS: Record<City, google.maps.LatLngLiteral> = {
+		Kyiv: { lat: 50.455, lng: 30.59 },
+		Kharkiv: { lat: 49.9975, lng: 36.255 },
+		Lviv: { lat: 49.83, lng: 24.015 },
+	}
 
 	const { isLoaded } = useJsApiLoader({
 		googleMapsApiKey: GOOGLE_MAPS_API_KEY,
@@ -57,6 +65,12 @@ export default function App() {
 				phoneNumber: c.phoneNumber,
 			}))
 		)
+
+		if (map && inputData.city) {
+			const center = CITY_CENTERS[inputData.city]
+			map.panTo(center)
+			map.setZoom(11)
+		}
 	}
 
 	if (!isLoaded) return <div>Loading map...</div>
@@ -65,8 +79,8 @@ export default function App() {
 		<div className='relative w-full h-screen'>
 			<GoogleMap
 				mapContainerStyle={{ width: '100%', height: '100%' }}
-				center={{ lat: 50.455, lng: 30.55 }}
-				zoom={11}
+				center={initialCenter}
+				zoom={initialZoom}
 				onLoad={mapInstance => setMap(mapInstance)}
 			>
 				{map && (
@@ -85,6 +99,7 @@ export default function App() {
 				shadow='md'
 				paddingBlock='7'
 				paddingInline='10'
+				width='20rem'
 			>
 				<GenerateDataForm onGenerate={onGenerate} />
 			</Box>

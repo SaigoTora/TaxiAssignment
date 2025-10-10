@@ -1,4 +1,7 @@
+export type City = 'Kyiv' | 'Kharkiv' | 'Lviv'
+
 export type GenerateData = {
+	city: City
 	taxiDriversCount?: number
 	clientCount?: number
 }

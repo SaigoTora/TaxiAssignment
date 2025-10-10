@@ -54,10 +54,10 @@ namespace TaxiAssignment.Server.Services
 		private readonly char[] _carLastLetters = ['A','B','C','E','H','K','M','O','P','T','X','Y',
 			'I'];
 
-		private readonly IRoadPointsService _roadPointsService;
+		private readonly IGeoPointsService _roadPointsService;
 		private readonly Random _random;
 
-		public GenerateDataService(IRoadPointsService roadPointsService, Random random)
+		public GenerateDataService(IGeoPointsService roadPointsService, Random random)
 		{
 			_roadPointsService = roadPointsService;
 			_random = random;
@@ -65,17 +65,17 @@ namespace TaxiAssignment.Server.Services
 
 		public AssignmentData GenerateData(GenerateDataRequest request)
 		{
-			TaxiDriver[] taxiDrivers = GenerateRandomTaxiDrivers(request.TaxiDriversCount);
-			Client[] clients = GenerateRandomClients(request.ClientCount);
+			TaxiDriver[] taxiDrivers = GenerateRandomTaxiDrivers(request.City, request.TaxiDriversCount);
+			Client[] clients = GenerateRandomClients(request.City, request.ClientCount);
 			double[,] distances = CalculateDistances(taxiDrivers, clients);
 
 			return new AssignmentData(taxiDrivers, clients, distances);
 		}
 
-		private TaxiDriver[] GenerateRandomTaxiDrivers(int count)
+		private TaxiDriver[] GenerateRandomTaxiDrivers(City city, int count)
 		{
 			TaxiDriver[] taxiDrivers = new TaxiDriver[count];
-			Location[] randomPoints = _roadPointsService.GetRandomPointsOnRoad(City.Kyiv, count);
+			Location[] randomPoints = _roadPointsService.GetRandomPointsOnRoad(city, count);
 
 			for (int i = 0; i < count; i++)
 			{
@@ -92,10 +92,10 @@ namespace TaxiAssignment.Server.Services
 
 			return taxiDrivers;
 		}
-		private Client[] GenerateRandomClients(int count)
+		private Client[] GenerateRandomClients(City city, int count)
 		{
 			Client[] clients = new Client[count];
-			Location[] randomPoints = _roadPointsService.GetRandomPointsInCity(City.Kyiv, count);
+			Location[] randomPoints = _roadPointsService.GetRandomPointsInCity(city, count);
 
 			for (int i = 0; i < count; i++)
 			{

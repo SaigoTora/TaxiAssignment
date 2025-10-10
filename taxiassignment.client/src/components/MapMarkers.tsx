@@ -107,10 +107,10 @@ export default function MapMarkers({ map, taxiDrivers, clients }: any) {
 			const infoWindow = new google.maps.InfoWindow({
 				content: `
 				<div class="bg-white pt-4 pr-2 pb-1 pl-2 rounded-xl shadow-md max-w-xs font-sans text-gray-800">
-					<div class="font-bold text-center text-base mb-1">
+					<div class="font-bold text-center text-base mb-1 cursor-text">
 						${c.name} ${c.surname}, ${c.age}
 					</div>
-					<div class="text-gray-800 mb-1">
+					<div class="text-gray-800 mb-1 cursor-text">
 						${c.phoneNumber}
 					</div>
 				</div>`,

@@ -6,7 +6,7 @@ using TaxiAssignment.Server.Models;
 
 namespace TaxiAssignment.Server.Services
 {
-	public class RoadPointsService : IRoadPointsService
+	public class GeoPointsService : IGeoPointsService
 	{
 		private record CityRoadData(string FileName, List<Location> Points);
 		private record CityBounds(double MinLatitude, double MaxLatitude, double MinLongitude,
@@ -16,21 +16,27 @@ namespace TaxiAssignment.Server.Services
 		private readonly Random _random;
 		private readonly Dictionary<City, CityRoadData> _cityRoadData;
 		private readonly Dictionary<City, CityBounds> _cityBounds;
-		private readonly List<Location> _kyivPoints;
+		private readonly List<Location> _kyivPoints, _kharkivPoints, _lvivPoints;
 
-		public RoadPointsService(Random random)
+		public GeoPointsService(Random random)
 		{
 			_random = random;
 			_kyivPoints = [];
+			_kharkivPoints = [];
+			_lvivPoints = [];
 
 			_cityRoadData = new Dictionary<City, CityRoadData>
 			{
-				[City.Kyiv] = new("kyiv_roads.csv", _kyivPoints)
+				[City.Kyiv] = new("kyiv_roads.csv", _kyivPoints),
+				[City.Kharkiv] = new("kharkiv_roads.csv", _kharkivPoints),
+				[City.Lviv] = new("lviv_roads.csv", _lvivPoints)
 			};
 
 			_cityBounds = new Dictionary<City, CityBounds>
 			{
-				[City.Kyiv] = new(50.35, 50.55, 30.30, 30.78)
+				[City.Kyiv] = new(50.32, 50.58, 30.18, 31),
+				[City.Kharkiv] = new(49.86, 50.145, 36.07, 36.44),
+				[City.Lviv] = new(49.75, 49.91, 23.88, 24.16)
 			};
 		}
 
@@ -66,7 +72,6 @@ namespace TaxiAssignment.Server.Services
 					$"were not found.");
 
 			HashSet<Location> randomPoints = [];
-			bounds = _cityBounds[city];
 
 			while (randomPoints.Count < count)
 			{
@@ -80,7 +85,7 @@ namespace TaxiAssignment.Server.Services
 
 		private static void LoadPointsFromFile(string fileName, List<Location> points)
 		{
-			const char SEPARATOR = '\t';
+			const char SEPARATOR = ',';
 			const string FOLDER_NAME = "Data";
 
 			string path = Path.Combine(Directory.GetParent(Environment.CurrentDirectory)!.FullName,

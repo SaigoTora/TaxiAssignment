@@ -2,6 +2,8 @@
 {
 	public enum City
 	{
-		Kyiv
+		Kyiv,
+		Kharkiv,
+		Lviv
 	}
 }
