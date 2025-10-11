@@ -17,6 +17,9 @@ builder.Services.AddSingleton<Random>();
 builder.Services.AddSingleton<IGenerateDataService, GenerateDataService>();
 builder.Services.AddSingleton<IGeoPointsService, GeoPointsService>();
 
+builder.Services.AddKeyedSingleton<IAssignmentService, HungarianAssignmentSolver>("hungarian");
+builder.Services.AddKeyedSingleton<IAssignmentService, AuctionAssignmentService>("auction");
+
 builder.Services.AddCors(options =>
 {
 	options.AddDefaultPolicy(policy =>
