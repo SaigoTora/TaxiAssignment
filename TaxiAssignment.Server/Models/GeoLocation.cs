@@ -2,7 +2,7 @@
 
 namespace TaxiAssignment.Server.Models
 {
-	public class Location
+	public class GeoLocation
 	{
 		public double Latitude { get; private set; }
 		public double Longitude { get; private set; }
@@ -15,9 +15,9 @@ namespace TaxiAssignment.Server.Models
 		[JsonIgnore]
 		public double LongitudeInRadians => Longitude * DegToRad;
 
-		public Location()
+		public GeoLocation()
 		{ }
-		public Location(double latitude, double longitude)
+		public GeoLocation(double latitude, double longitude)
 		{
 			Latitude = latitude;
 			Longitude = longitude;
@@ -25,11 +25,13 @@ namespace TaxiAssignment.Server.Models
 
 		public override bool Equals(object? obj)
 		{
-			if (obj is not Location other)
+			if (obj is not GeoLocation other)
 				return false;
 
-			return Math.Abs(Latitude - other.Latitude) < 1e-9 &&
-				   Math.Abs(Longitude - other.Longitude) < 1e-9;
+			const double EPSILON = 1e-9;
+
+			return Math.Abs(Latitude - other.Latitude) < EPSILON &&
+				   Math.Abs(Longitude - other.Longitude) < EPSILON;
 		}
 		public override int GetHashCode() => HashCode.Combine(Latitude, Longitude);
 	}

@@ -75,7 +75,7 @@ namespace TaxiAssignment.Server.Services
 		private TaxiDriver[] GenerateRandomTaxiDrivers(City city, int count)
 		{
 			TaxiDriver[] taxiDrivers = new TaxiDriver[count];
-			Location[] randomPoints = _roadPointsService.GetRandomPointsOnRoad(city, count);
+			GeoLocation[] randomPoints = _roadPointsService.GetRandomPointsOnRoad(city, count);
 
 			for (int i = 0; i < count; i++)
 			{
@@ -95,7 +95,7 @@ namespace TaxiAssignment.Server.Services
 		private Client[] GenerateRandomClients(City city, int count)
 		{
 			Client[] clients = new Client[count];
-			Location[] randomPoints = _roadPointsService.GetRandomPointsInCity(city, count);
+			GeoLocation[] randomPoints = _roadPointsService.GetRandomPointsInCity(city, count);
 
 			for (int i = 0; i < count; i++)
 			{
@@ -172,7 +172,7 @@ namespace TaxiAssignment.Server.Services
 
 			return distances;
 		}
-		public static double CalculateDistance(Location firstPoint, Location secondPoint)
+		public static double CalculateDistance(GeoLocation firstPoint, GeoLocation secondPoint)
 		{
 			const double EARTH_RADIUS_METERS = 6376500.0;
 

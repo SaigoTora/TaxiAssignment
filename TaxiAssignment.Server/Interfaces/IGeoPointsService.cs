@@ -10,7 +10,7 @@ namespace TaxiAssignment.Server.Interfaces
 		/// <param name="city">The city for which to generate random road points.</param>
 		/// <param name="count">The number of random points to return.</param>
 		/// <returns>An array of Location objects representing random points on roads in the specified city.</returns>
-		Location[] GetRandomPointsOnRoad(City city, int count);
+		GeoLocation[] GetRandomPointsOnRoad(City city, int count);
 
 		/// <summary>
 		/// Returns a specified number of random points anywhere within the boundaries of the given city.
@@ -19,6 +19,6 @@ namespace TaxiAssignment.Server.Interfaces
 		/// <param name="city">The city for which to generate random points.</param>
 		/// <param name="count">The number of random points to return.</param>
 		/// <returns>An array of Location objects representing random points anywhere within the city.</returns>
-		Location[] GetRandomPointsInCity(City city, int count);
+		GeoLocation[] GetRandomPointsInCity(City city, int count);
 	}
 }
