@@ -46,7 +46,7 @@ namespace TaxiAssignment.Server.Controllers
 		[HttpPost("auction")]
 		public IActionResult AssignAuction([FromBody] GenerateAssignRequest request)
 		{
-			AssignmentResult assignmentResult = _assignmentRunner.Run(_hungarianAssignmentService,
+			AssignmentResult assignmentResult = _assignmentRunner.Run(_auctionAssignmentService,
 				request);
 			return Ok(assignmentResult);
 		}

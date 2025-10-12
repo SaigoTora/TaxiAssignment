@@ -10,6 +10,7 @@ import type { City, GenerateDataFormProps } from '../../types/forms'
 
 export default function GenerateDataForm({
 	onGenerate,
+	onChange,
 }: GenerateDataFormProps) {
 	const [inputData, setInputData] = useState<{
 		city: City
@@ -17,8 +18,8 @@ export default function GenerateDataForm({
 		clientCount?: number
 	}>({
 		city: 'Kyiv',
-		taxiDriversCount: 10,
-		clientCount: 10,
+		taxiDriversCount: 100,
+		clientCount: 100,
 	})
 
 	const cities = createListCollection({
@@ -43,9 +44,11 @@ export default function GenerateDataForm({
 				<Select.Root
 					collection={cities}
 					value={[inputData.city]}
-					onValueChange={({ value }) =>
-						setInputData({ ...inputData, city: value[0] as City })
-					}
+					onValueChange={({ value }) => {
+						const newData = { ...inputData, city: value[0] as City }
+						setInputData(newData)
+						onChange?.(newData)
+					}}
 				>
 					<Select.HiddenSelect />
 					<Select.Control className='border-2 border-gray-300 rounded-lg px-2'>
@@ -88,12 +91,14 @@ export default function GenerateDataForm({
 				value={inputData.taxiDriversCount ?? ''}
 				min={1}
 				max={10000}
-				onChange={e =>
-					setInputData({
+				onChange={e => {
+					const newData = {
 						...inputData,
 						taxiDriversCount: Number(e.target.value),
-					})
-				}
+					}
+					setInputData(newData)
+					onChange?.(newData)
+				}}
 			/>
 
 			<label className='font-medium mb-1 cursor-text'>Number of clients:</label>
@@ -106,9 +111,11 @@ export default function GenerateDataForm({
 				value={inputData.clientCount ?? ''}
 				min={1}
 				max={10000}
-				onChange={e =>
-					setInputData({ ...inputData, clientCount: Number(e.target.value) })
-				}
+				onChange={e => {
+					const newData = { ...inputData, clientCount: Number(e.target.value) }
+					setInputData(newData)
+					onChange?.(newData)
+				}}
 			/>
 
 			<Button

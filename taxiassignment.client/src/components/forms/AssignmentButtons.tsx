@@ -23,7 +23,7 @@ export default function AssignmentButtons({
 
 	return (
 		<div className='flex w-full flex-col'>
-			<h3 className='text-xl font-bold mt-4 mb-3 text-center'>Assignment</h3>
+			<h3 className='text-xl font-bold mb-3 text-center'>Assignment</h3>
 
 			<Button
 				onClick={() => handleClick(onHungarianAssign)}

@@ -21,7 +21,7 @@ namespace TaxiAssignment.Server.Services
 			memoryAfter = GC.GetTotalMemory(false);
 			long memoryUsedBytes = memoryAfter - memoryBefore;
 
-			return new(sw.Elapsed, memoryUsedBytes, assignment, request.Distances);
+			return new(sw.ElapsedMilliseconds, memoryUsedBytes, assignment, request.Distances);
 		}
 	}
 }

@@ -16,8 +16,6 @@ export const generateData = async (inputData: GenerateData) => {
 
 export const assignHungarian = async (assignData: AssignData) => {
 	try {
-		console.log(assignData)
-
 		const response = await axios.post(
 			'https://localhost:7264/assignments/hungarian',
 			assignData

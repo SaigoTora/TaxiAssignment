@@ -10,18 +10,32 @@ import {
 import type { City, GenerateData } from './types/forms'
 import { useState } from 'react'
 import AssignmentButtons from './components/forms/AssignmentButtons'
+import type { AssignmentResult } from './types/assignment'
+import AssignmentResultCard from './components/AssignmentResultCard'
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
 
 export default function App() {
+	const [map, setMap] = useState<google.maps.Map | null>(null)
+	const [initialCenter] = useState({ lat: 50.455, lng: 30.59 })
+	const [initialZoom] = useState(11)
+
 	const [taxiDrivers, setTaxiDrivers] = useState<
 		{ lat: number; lng: number }[]
 	>([])
 	const [clients, setClients] = useState<{ lat: number; lng: number }[]>([])
-	const [map, setMap] = useState<google.maps.Map | null>(null)
 	const [distances, setDistances] = useState<[][] | null>(null)
-	const [initialCenter] = useState({ lat: 50.455, lng: 30.59 })
-	const [initialZoom] = useState(11)
+	const [isDataReady, setIsDataReady] = useState(false)
+
+	const [hungarianResult, setHungarianResult] =
+		useState<AssignmentResult | null>(null)
+	const [auctionResult, setAuctionResult] = useState<AssignmentResult | null>(
+		null
+	)
+
+	const [selectedTab, setSelectedTab] = useState<string | null>(
+		hungarianResult ? 'hungarian' : auctionResult ? 'auction' : null
+	)
 
 	const CITY_CENTERS: Record<City, google.maps.LatLngLiteral> = {
 		Kyiv: { lat: 50.455, lng: 30.59 },
@@ -72,6 +86,9 @@ export default function App() {
 			}))
 		)
 		setDistances(data.distances)
+		setHungarianResult(null)
+		setAuctionResult(null)
+		setIsDataReady(true)
 
 		if (map && inputData.city) {
 			const center = CITY_CENTERS[inputData.city]
@@ -80,13 +97,20 @@ export default function App() {
 		}
 	}
 
+	const onInputDataChange = () => {
+		setHungarianResult(null)
+		setAuctionResult(null)
+		setIsDataReady(false)
+	}
+
 	const onHungarianAssign = async () => {
 		if (!distances) return
 
 		const assignResult = await assignHungarian({ distances })
 		if (!assignResult) return
 
-		console.log('Hungarian algorithm results:', assignResult)
+		setSelectedTab('hungarian')
+		setHungarianResult(assignResult)
 	}
 
 	const onAuctionAssign = async () => {
@@ -95,7 +119,8 @@ export default function App() {
 		const assignResult = await assignAuction({ distances })
 		if (!assignResult) return
 
-		console.log('Auction algorithm results:', assignResult)
+		setSelectedTab('auction')
+		setAuctionResult(assignResult)
 	}
 
 	if (!isLoaded) return <div>Loading map...</div>
@@ -126,12 +151,27 @@ export default function App() {
 				paddingInline='10'
 				width='20rem'
 			>
-				<GenerateDataForm onGenerate={onGenerate} />
-				{taxiDrivers.length > 0 && clients.length > 0 && (
-					<AssignmentButtons
-						onHungarianAssign={onHungarianAssign}
-						onAuctionAssign={onAuctionAssign}
-					/>
+				<GenerateDataForm
+					onGenerate={onGenerate}
+					onChange={onInputDataChange}
+				/>
+				{isDataReady && (
+					<Box mt='6'>
+						<AssignmentButtons
+							onHungarianAssign={onHungarianAssign}
+							onAuctionAssign={onAuctionAssign}
+						/>
+					</Box>
+				)}
+				{(hungarianResult || auctionResult) && (
+					<Box mt='6'>
+						<AssignmentResultCard
+							hungarianResult={hungarianResult}
+							auctionResult={auctionResult}
+							selectedTab={selectedTab}
+							setSelectedTab={setSelectedTab}
+						/>
+					</Box>
 				)}
 			</Box>
 		</div>
