@@ -2,7 +2,7 @@
 
 namespace TaxiAssignment.Server.Services
 {
-	public class HungarianAssignmentSolver : IAssignmentService
+	public class HungarianAssignmentService : IAssignmentService
 	{
 		private readonly record struct Location(int Row, int Column);
 

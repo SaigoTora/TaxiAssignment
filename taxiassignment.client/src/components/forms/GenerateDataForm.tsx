@@ -6,7 +6,7 @@ import {
 	Select,
 } from '@chakra-ui/react'
 import { useState } from 'react'
-import type { City, GenerateDataFormProps } from '../types/forms'
+import type { City, GenerateDataFormProps } from '../../types/forms'
 
 export default function GenerateDataForm({
 	onGenerate,
@@ -114,6 +114,9 @@ export default function GenerateDataForm({
 			<Button
 				type='submit'
 				bgColor='yellow.500'
+				_hover={{ bg: 'yellow.600' }}
+				_active={{ bg: 'yellow.600' }}
+				transition='background-color 0.35s ease'
 				fontWeight='bold'
 				fontSize='md'
 			>

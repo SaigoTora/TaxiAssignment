@@ -9,3 +9,7 @@ export type GenerateData = {
 export type GenerateDataFormProps = {
 	onGenerate: (data: GenerateData) => void
 }
+
+export type AssignData = {
+	distances: number[][]
+}

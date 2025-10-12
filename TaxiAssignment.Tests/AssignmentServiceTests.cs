@@ -7,7 +7,7 @@ namespace TaxiAssignment.Tests
 	{
 		private readonly IAssignmentService[] _services =
 		[
-			new HungarianAssignmentSolver(),
+			new HungarianAssignmentService(),
 			new AuctionAssignmentService()
 		];
 

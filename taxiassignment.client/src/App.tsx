@@ -1,10 +1,15 @@
 ﻿import { Box } from '@chakra-ui/react'
 import { GoogleMap, useJsApiLoader } from '@react-google-maps/api'
-import GenerateDataForm from './components/GenerateDataForm'
+import GenerateDataForm from './components/forms/GenerateDataForm'
 import MapMarkers from './components/MapMarkers'
-import { generateData } from './services/assignment'
+import {
+	assignAuction,
+	assignHungarian,
+	generateData,
+} from './services/assignment'
 import type { City, GenerateData } from './types/forms'
 import { useState } from 'react'
+import AssignmentButtons from './components/forms/AssignmentButtons'
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
 
@@ -14,6 +19,7 @@ export default function App() {
 	>([])
 	const [clients, setClients] = useState<{ lat: number; lng: number }[]>([])
 	const [map, setMap] = useState<google.maps.Map | null>(null)
+	const [distances, setDistances] = useState<[][] | null>(null)
 	const [initialCenter] = useState({ lat: 50.455, lng: 30.59 })
 	const [initialZoom] = useState(11)
 
@@ -65,12 +71,31 @@ export default function App() {
 				phoneNumber: c.phoneNumber,
 			}))
 		)
+		setDistances(data.distances)
 
 		if (map && inputData.city) {
 			const center = CITY_CENTERS[inputData.city]
 			map.panTo(center)
 			map.setZoom(11)
 		}
+	}
+
+	const onHungarianAssign = async () => {
+		if (!distances) return
+
+		const assignResult = await assignHungarian({ distances })
+		if (!assignResult) return
+
+		console.log('Hungarian algorithm results:', assignResult)
+	}
+
+	const onAuctionAssign = async () => {
+		if (!distances) return
+
+		const assignResult = await assignAuction({ distances })
+		if (!assignResult) return
+
+		console.log('Auction algorithm results:', assignResult)
 	}
 
 	if (!isLoaded) return <div>Loading map...</div>
@@ -102,6 +127,12 @@ export default function App() {
 				width='20rem'
 			>
 				<GenerateDataForm onGenerate={onGenerate} />
+				{taxiDrivers.length > 0 && clients.length > 0 && (
+					<AssignmentButtons
+						onHungarianAssign={onHungarianAssign}
+						onAuctionAssign={onAuctionAssign}
+					/>
+				)}
 			</Box>
 		</div>
 	)
