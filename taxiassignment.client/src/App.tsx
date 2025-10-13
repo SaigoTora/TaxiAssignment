@@ -1,7 +1,7 @@
 ﻿import { Box } from '@chakra-ui/react'
 import { GoogleMap, useJsApiLoader } from '@react-google-maps/api'
 import GenerateDataForm from './components/forms/GenerateDataForm'
-import MapMarkers from './components/MapMarkers'
+import MapMarkers from './components/map/MapMarkers'
 import {
 	assignAuction,
 	assignHungarian,
@@ -10,9 +10,11 @@ import {
 import type { City, GenerateData } from './types/forms'
 import { useState } from 'react'
 import AssignmentButtons from './components/forms/AssignmentButtons'
-import type { AssignmentResult } from './types/assignment'
+import type { AssignmentResult, Client, TaxiDriver } from './types/assignment'
 import AssignmentResultCard from './components/AssignmentResultCard'
+import MapLegend from './components/map/MapLegend'
 
+const LIBRARIES: ('places' | 'marker' | 'drawing')[] = ['marker']
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
 
 export default function App() {
@@ -20,10 +22,8 @@ export default function App() {
 	const [initialCenter] = useState({ lat: 50.455, lng: 30.55 })
 	const [initialZoom] = useState(11)
 
-	const [taxiDrivers, setTaxiDrivers] = useState<
-		{ lat: number; lng: number }[]
-	>([])
-	const [clients, setClients] = useState<{ lat: number; lng: number }[]>([])
+	const [taxiDrivers, setTaxiDrivers] = useState<TaxiDriver[]>([])
+	const [clients, setClients] = useState<Client[]>([])
 	const [distances, setDistances] = useState<[][] | null>(null)
 	const [isDataReady, setIsDataReady] = useState(false)
 
@@ -32,10 +32,7 @@ export default function App() {
 	const [auctionResult, setAuctionResult] = useState<AssignmentResult | null>(
 		null
 	)
-
-	const [selectedTab, setSelectedTab] = useState<string | null>(
-		hungarianResult ? 'hungarian' : auctionResult ? 'auction' : null
-	)
+	const [selectedTab, setSelectedTab] = useState<string | null>(null)
 
 	const CITY_CENTERS: Record<City, google.maps.LatLngLiteral> = {
 		Kyiv: { lat: 50.455, lng: 30.55 },
@@ -45,7 +42,7 @@ export default function App() {
 
 	const { isLoaded } = useJsApiLoader({
 		googleMapsApiKey: GOOGLE_MAPS_API_KEY,
-		libraries: ['marker'],
+		libraries: LIBRARIES,
 	})
 
 	const onGenerate = async (inputData: GenerateData) => {
@@ -54,35 +51,14 @@ export default function App() {
 
 		setTaxiDrivers(
 			data.taxiDrivers.map((t: any) => ({
-				id: t.id,
-				location: {
-					lat: t.location.latitude,
-					lng: t.location.longitude,
-				},
-				name: t.name,
-				surname: t.surname,
-				age: t.age,
-				phoneNumber: t.phoneNumber,
-				car: {
-					class: t.car.class,
-					brand: t.car.brand,
-					licensePlate: t.car.licensePlate,
-					color: t.car.color,
-					seatsCount: t.car.seatsCount,
-				},
+				...t,
+				location: { lat: t.location.latitude, lng: t.location.longitude },
 			}))
 		)
 		setClients(
 			data.clients.map((c: any) => ({
-				id: c.id,
-				location: {
-					lat: c.location.latitude,
-					lng: c.location.longitude,
-				},
-				name: c.name,
-				surname: c.surname,
-				age: c.age,
-				phoneNumber: c.phoneNumber,
+				...c,
+				location: { lat: c.location.latitude, lng: c.location.longitude },
 			}))
 		)
 		setDistances(data.distances)
@@ -101,26 +77,27 @@ export default function App() {
 		setHungarianResult(null)
 		setAuctionResult(null)
 		setIsDataReady(false)
+		setTaxiDrivers([])
+		setClients([])
+		setSelectedTab(null)
 	}
 
 	const onHungarianAssign = async () => {
 		if (!distances) return
-
 		const assignResult = await assignHungarian({ distances })
 		if (!assignResult) return
 
-		setSelectedTab('hungarian')
 		setHungarianResult(assignResult)
+		setSelectedTab('hungarian')
 	}
 
 	const onAuctionAssign = async () => {
 		if (!distances) return
-
 		const assignResult = await assignAuction({ distances })
 		if (!assignResult) return
 
-		setSelectedTab('auction')
 		setAuctionResult(assignResult)
+		setSelectedTab('auction')
 	}
 
 	if (!isLoaded) return <div>Loading map...</div>
@@ -131,11 +108,19 @@ export default function App() {
 				mapContainerStyle={{ width: '100%', height: '100%' }}
 				center={initialCenter}
 				zoom={initialZoom}
+				options={{ fullscreenControl: false }}
 				onLoad={mapInstance => setMap(mapInstance)}
 			>
 				{map && (
-					<MapMarkers map={map} taxiDrivers={taxiDrivers} clients={clients} />
+					<MapMarkers
+						map={map}
+						taxiDrivers={taxiDrivers}
+						clients={clients}
+						hungarianResult={hungarianResult}
+						auctionResult={auctionResult}
+					/>
 				)}
+				<MapLegend />
 			</GoogleMap>
 
 			<Box
