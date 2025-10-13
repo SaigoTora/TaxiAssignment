@@ -17,7 +17,7 @@ const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
 
 export default function App() {
 	const [map, setMap] = useState<google.maps.Map | null>(null)
-	const [initialCenter] = useState({ lat: 50.455, lng: 30.59 })
+	const [initialCenter] = useState({ lat: 50.455, lng: 30.55 })
 	const [initialZoom] = useState(11)
 
 	const [taxiDrivers, setTaxiDrivers] = useState<
@@ -38,7 +38,7 @@ export default function App() {
 	)
 
 	const CITY_CENTERS: Record<City, google.maps.LatLngLiteral> = {
-		Kyiv: { lat: 50.455, lng: 30.59 },
+		Kyiv: { lat: 50.455, lng: 30.55 },
 		Kharkiv: { lat: 49.9975, lng: 36.255 },
 		Lviv: { lat: 49.83, lng: 24.015 },
 	}
@@ -149,14 +149,14 @@ export default function App() {
 				shadow='md'
 				paddingBlock='7'
 				paddingInline='10'
-				width='20rem'
+				width='22rem'
 			>
 				<GenerateDataForm
 					onGenerate={onGenerate}
 					onChange={onInputDataChange}
 				/>
 				{isDataReady && (
-					<Box mt='6'>
+					<Box mt='7'>
 						<AssignmentButtons
 							onHungarianAssign={onHungarianAssign}
 							onAuctionAssign={onAuctionAssign}

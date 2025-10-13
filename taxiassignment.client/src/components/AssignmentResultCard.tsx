@@ -1,4 +1,4 @@
-import { Tabs, Text, Stack } from '@chakra-ui/react'
+import { Tabs } from '@chakra-ui/react'
 import type { AssignmentResult } from '../types/assignment'
 
 interface Props {
@@ -101,17 +101,31 @@ function ResultPanel({ result }: { result: AssignmentResult }) {
 	}
 
 	return (
-		<Stack p={3} paddingTop={0} borderRadius='md'>
-			<Text>
-				<strong>Execution time:</strong> {formatTime(result.executionTimeMs)}
-			</Text>
-			<Text>
-				<strong>Memory used:</strong> {formatMemory(result.memoryUsedBytes)}
-			</Text>
-			<Text>
-				<strong>Total distance:</strong>{' '}
-				{formatDistance(result.totalDistanceMeters)}
-			</Text>
-		</Stack>
+		<div className='bg-gray-50 border border-gray-200 rounded-2xl shadow-sm p-5 w-full max-w-md'>
+			<h3 className='text-lg font-semibold text-gray-800 mb-4 text-center'>
+				Assignment Results
+			</h3>
+
+			<div className='space-y-3 text-base text-gray-700'>
+				<div className='flex justify-between'>
+					<span>Execution time:</span>
+					<span className='font-medium'>
+						{formatTime(result.executionTimeMs)}
+					</span>
+				</div>
+				<div className='flex justify-between'>
+					<span>Memory used:</span>
+					<span className='font-medium'>
+						{formatMemory(result.memoryUsedBytes)}
+					</span>
+				</div>
+				<div className='flex justify-between'>
+					<span>Total distance:</span>
+					<span className='font-medium'>
+						{formatDistance(result.totalDistanceMeters)}
+					</span>
+				</div>
+			</div>
+		</div>
 	)
 }
