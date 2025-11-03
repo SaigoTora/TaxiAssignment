@@ -118,13 +118,13 @@ namespace TaxiAssignment.Server.Services
 				return matrix;
 
 			int maxLength = Math.Max(matrix.GetLength(0), matrix.GetLength(1));
-			double[,] buf = new double[maxLength, maxLength];
+			double[,] result = new double[maxLength, maxLength];
 			double max = matrix[0, 0];
 
 			for (int i = 0; i < matrix.GetLength(0); i++)// Writing existing elements into an array
 				for (int j = 0; j < matrix.GetLength(1); j++)// and finding the maximum
 				{
-					buf[i, j] = matrix[i, j];
+					result[i, j] = matrix[i, j];
 					max = Math.Max(max, matrix[i, j]);
 				}
 
@@ -132,15 +132,15 @@ namespace TaxiAssignment.Server.Services
 			{// If there are more rows than columns
 				for (int i = 0; i < matrix.GetLength(0); i++)
 					for (int j = matrix.GetLength(1); j < matrix.GetLength(0); j++)
-						buf[i, j] = max;
+						result[i, j] = max;
 			}
 			else
 			{// If there are more columns than rows
 				for (int i = matrix.GetLength(0); i < matrix.GetLength(1); i++)
 					for (int j = 0; j < matrix.GetLength(1); j++)
-						buf[i, j] = max;
+						result[i, j] = max;
 			}
-			return buf;
+			return result;
 		}
 		private static int RunStep1(byte[,] masks, bool[] colsCovered)
 		{// Method that fills the colsCovered array and returns the next step number (2 or -1)
