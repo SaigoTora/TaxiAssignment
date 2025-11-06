@@ -8,7 +8,8 @@ namespace TaxiAssignment.Tests
 		private readonly IAssignmentService[] _services =
 		[
 			new HungarianAssignmentService(),
-			new AuctionAssignmentService()
+			new AuctionFixedEpsilonService(),
+			new AuctionScaledEpsilonService()
 		];
 
 

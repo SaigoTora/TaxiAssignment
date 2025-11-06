@@ -2,7 +2,7 @@
 
 namespace TaxiAssignment.Server.Services
 {
-	public class AuctionAssignmentService : IAssignmentService
+	public abstract class AuctionAssignmentService : IAssignmentService
 	{
 		private readonly record struct BestTasksResult(int BestTask, double BestValue,
 			double SecondBestValue);
@@ -13,6 +13,8 @@ namespace TaxiAssignment.Server.Services
 
 		public int[] Solve(double[,] costs, bool findMax)
 		{
+			ResetAuctionState();
+
 			int n = costs.GetLength(0), m = costs.GetLength(1);
 			int minDimension = Math.Min(n, m);
 			bool? hasMoreRows = null;
@@ -31,56 +33,18 @@ namespace TaxiAssignment.Server.Services
 			return RunAuctionIteration(costs, n, findMax, minDimension, hasMoreRows);
 		}
 
-		private static double[,] CreateSquareMatrix(double[,] matrix, bool findMax)
-		{
-			int n = matrix.GetLength(0), m = matrix.GetLength(1);
-			if (n == m)
-				return matrix;
-
-			int maxLength = Math.Max(n, m);
-			double[,] result = new double[maxLength, maxLength];
-			double fillValue = matrix[0, 0];
-
-			if (findMax)
-				for (int i = 0; i < matrix.GetLength(0); i++)
-					for (int j = 0; j < matrix.GetLength(1); j++)
-					{
-						result[i, j] = matrix[i, j];
-						fillValue = Math.Min(fillValue, matrix[i, j]);
-					}
-			else
-				for (int i = 0; i < matrix.GetLength(0); i++)
-					for (int j = 0; j < matrix.GetLength(1); j++)
-					{
-						result[i, j] = matrix[i, j];
-						fillValue = Math.Max(fillValue, matrix[i, j]);
-					}
-
-			if (matrix.GetLength(0) > matrix.GetLength(1))
-			{// If there are more rows than columns
-				for (int i = 0; i < matrix.GetLength(0); i++)
-					for (int j = matrix.GetLength(1); j < matrix.GetLength(0); j++)
-						result[i, j] = fillValue;
-			}
-			else
-			{// If there are more columns than rows
-				for (int i = matrix.GetLength(0); i < matrix.GetLength(1); i++)
-					for (int j = 0; j < matrix.GetLength(1); j++)
-						result[i, j] = fillValue;
-			}
-
-			return result;
-		}
+		protected abstract double[,] CreateSquareMatrix(double[,] costs, bool findMax);
+		protected abstract double CalculateEpsilon(double[,] costs, int n);
+		protected virtual void ResetAuctionState() { }
 
 		private int[] RunAuctionIteration(double[,] costs, int n, bool findMax, int minDimension,
 			bool? hasMoreRows)
 		{
-			double epsilon = 1.0 / (n + 1);
-
 			bool unassignedExists;
 			do
 			{
 				unassignedExists = false;
+				double epsilon = CalculateEpsilon(costs, n);
 				for (int agent = 0; agent < n; agent++)
 				{
 					if (_agentsTasks[agent] != -1)

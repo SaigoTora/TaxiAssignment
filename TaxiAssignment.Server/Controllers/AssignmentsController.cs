@@ -14,18 +14,22 @@ namespace TaxiAssignment.Server.Controllers
 		private readonly IGenerateDataService _generateDataService;
 		private readonly IAssignmentRunner _assignmentRunner;
 		private readonly IAssignmentService _hungarianAssignmentService;
-		private readonly IAssignmentService _auctionAssignmentService;
+		private readonly IAssignmentService _auctionFixedAssignmentService;
+		private readonly IAssignmentService _auctionScaledAssignmentService;
 
 		public AssignmentsController(ILogger<AssignmentsController> logger,
 			IGenerateDataService generateDataService, IAssignmentRunner assignmentRunner,
 			[FromKeyedServices("hungarian")] IAssignmentService hungarianAssignmentService,
-			[FromKeyedServices("auction")] IAssignmentService auctionAssignmentService)
+			[FromKeyedServices("auction-fixed")] IAssignmentService auctionFixedAssignmentService,
+			[FromKeyedServices("auction-scaled")] IAssignmentService auctionScaledAssignmentService
+			)
 		{
 			_logger = logger;
 			_generateDataService = generateDataService;
 			_assignmentRunner = assignmentRunner;
 			_hungarianAssignmentService = hungarianAssignmentService;
-			_auctionAssignmentService = auctionAssignmentService;
+			_auctionFixedAssignmentService = auctionFixedAssignmentService;
+			_auctionScaledAssignmentService = auctionScaledAssignmentService;
 		}
 
 		[HttpPost("generate-data")]
@@ -43,11 +47,19 @@ namespace TaxiAssignment.Server.Controllers
 			return Ok(assignmentResult);
 		}
 
-		[HttpPost("auction")]
-		public IActionResult AssignAuction([FromBody] GenerateAssignRequest request)
+		[HttpPost("auction-fixed")]
+		public IActionResult AssignAuctionFixed([FromBody] GenerateAssignRequest request)
 		{
-			AssignmentResult assignmentResult = _assignmentRunner.Run(_auctionAssignmentService,
-				request);
+			AssignmentResult assignmentResult = _assignmentRunner.Run(
+				_auctionFixedAssignmentService, request);
+			return Ok(assignmentResult);
+		}
+
+		[HttpPost("auction-scaled")]
+		public IActionResult AssignAuctionScaled([FromBody] GenerateAssignRequest request)
+		{
+			AssignmentResult assignmentResult = _assignmentRunner.Run(
+				_auctionScaledAssignmentService, request);
 			return Ok(assignmentResult);
 		}
 	}
