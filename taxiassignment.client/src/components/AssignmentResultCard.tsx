@@ -3,21 +3,24 @@ import type { AssignmentResult } from '../types/assignment'
 
 interface Props {
 	hungarianResult: AssignmentResult | null
-	auctionResult: AssignmentResult | null
+	auctionFixedResult: AssignmentResult | null
+	auctionScaledResult: AssignmentResult | null
 	selectedTab: string | null
 	setSelectedTab: (tab: string) => void
 }
 
 export default function AssignmentResultCard({
 	hungarianResult,
-	auctionResult,
+	auctionFixedResult,
+	auctionScaledResult,
 	selectedTab,
 	setSelectedTab,
 }: Props) {
 	const hasHungarian = !!hungarianResult
-	const hasAuction = !!auctionResult
+	const hasAuctionFixed = !!auctionFixedResult
+	const hasAuctionScaled = !!auctionScaledResult
 
-	if (!hasHungarian && !hasAuction) return null
+	if (!hasHungarian && !hasAuctionFixed && !hasAuctionScaled) return null
 	return (
 		<Tabs.Root
 			lazyMount
@@ -26,11 +29,11 @@ export default function AssignmentResultCard({
 			variant='outline'
 			onValueChange={e => setSelectedTab(e.value)}
 		>
-			<Tabs.List bg='white' mb='2' gap='2'>
+			<Tabs.List bg='white' mb='2' gap='2' fontSize='sm'>
 				{hasHungarian && (
 					<Tabs.Trigger
 						value='hungarian'
-						px='4'
+						px='1'
 						py='2'
 						fontWeight='bold'
 						borderBottom='2px solid'
@@ -43,10 +46,11 @@ export default function AssignmentResultCard({
 						Hungarian
 					</Tabs.Trigger>
 				)}
-				{hasAuction && (
+
+				{hasAuctionFixed && (
 					<Tabs.Trigger
-						value='auction'
-						px='4'
+						value='auction-fixed'
+						px='1'
 						py='2'
 						fontWeight='bold'
 						borderBottom='2px solid'
@@ -56,7 +60,24 @@ export default function AssignmentResultCard({
 							transition: 'border-color 0.25s ease',
 						}}
 					>
-						Auction
+						Auction Fx.
+					</Tabs.Trigger>
+				)}
+
+				{hasAuctionScaled && (
+					<Tabs.Trigger
+						value='auction-scaled'
+						px='1'
+						py='2'
+						fontWeight='bold'
+						borderBottom='2px solid'
+						borderColor='transparent'
+						_selected={{
+							borderColor: 'blue.600',
+							transition: 'border-color 0.25s ease',
+						}}
+					>
+						Auction Sc.
 					</Tabs.Trigger>
 				)}
 			</Tabs.List>
@@ -67,9 +88,15 @@ export default function AssignmentResultCard({
 				</Tabs.Content>
 			)}
 
-			{hasAuction && (
-				<Tabs.Content value='auction'>
-					<ResultPanel result={auctionResult!} />
+			{hasAuctionFixed && (
+				<Tabs.Content value='auction-fixed'>
+					<ResultPanel result={auctionFixedResult!} />
+				</Tabs.Content>
+			)}
+
+			{hasAuctionScaled && (
+				<Tabs.Content value='auction-scaled'>
+					<ResultPanel result={auctionScaledResult!} />
 				</Tabs.Content>
 			)}
 		</Tabs.Root>

@@ -1,5 +1,9 @@
 import { Box, Flex, Text } from '@chakra-ui/react'
-import { HungarianStyle, AuctionStyle } from './MapMarkers'
+import {
+	HungarianStyle,
+	AuctionFixedStyle,
+	AuctionScaledStyle,
+} from './MapMarkers'
 
 export default function MapLegend() {
 	return (
@@ -23,13 +27,23 @@ export default function MapLegend() {
 				/>
 				<Text>Hungarian</Text>
 			</Flex>
+
+			<Flex align='center' gap='6px' mb='2px'>
+				<Box
+					w='20px'
+					h={`${AuctionFixedStyle.strokeWeight}px`}
+					bg={AuctionFixedStyle.color}
+				/>
+				<Text>Auction with fixed epsilon</Text>
+			</Flex>
+
 			<Flex align='center' gap='6px'>
 				<Box
 					w='20px'
-					h={`${AuctionStyle.strokeWeight}px`}
-					bg={AuctionStyle.color}
+					h={`${AuctionScaledStyle.strokeWeight}px`}
+					bg={AuctionScaledStyle.color}
 				/>
-				<Text>Auction</Text>
+				<Text>Auction with scaled epsilon</Text>
 			</Flex>
 		</Box>
 	)

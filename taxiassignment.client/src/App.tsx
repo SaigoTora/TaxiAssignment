@@ -3,9 +3,10 @@ import { GoogleMap, useJsApiLoader } from '@react-google-maps/api'
 import GenerateDataForm from './components/forms/GenerateDataForm'
 import MapMarkers from './components/map/MapMarkers'
 import {
-	assignAuction,
-	assignHungarian,
 	generateData,
+	assignHungarian,
+	assignAuctionFixed,
+	assignAuctionScaled,
 } from './services/assignment'
 import type { City, GenerateData } from './types/forms'
 import { useState } from 'react'
@@ -29,9 +30,10 @@ export default function App() {
 
 	const [hungarianResult, setHungarianResult] =
 		useState<AssignmentResult | null>(null)
-	const [auctionResult, setAuctionResult] = useState<AssignmentResult | null>(
-		null
-	)
+	const [auctionFixedResult, setAuctionFixedResult] =
+		useState<AssignmentResult | null>(null)
+	const [auctionScaledResult, setAuctionScaledResult] =
+		useState<AssignmentResult | null>(null)
 	const [selectedTab, setSelectedTab] = useState<string | null>(null)
 
 	const CITY_CENTERS: Record<City, google.maps.LatLngLiteral> = {
@@ -63,7 +65,8 @@ export default function App() {
 		)
 		setDistances(data.distances)
 		setHungarianResult(null)
-		setAuctionResult(null)
+		setAuctionFixedResult(null)
+		setAuctionScaledResult(null)
 		setIsDataReady(true)
 
 		if (map && inputData.city) {
@@ -75,7 +78,8 @@ export default function App() {
 
 	const onInputDataChange = () => {
 		setHungarianResult(null)
-		setAuctionResult(null)
+		setAuctionFixedResult(null)
+		setAuctionScaledResult(null)
 		setIsDataReady(false)
 		setTaxiDrivers([])
 		setClients([])
@@ -91,13 +95,22 @@ export default function App() {
 		setSelectedTab('hungarian')
 	}
 
-	const onAuctionAssign = async () => {
+	const onAuctionFixedAssign = async () => {
 		if (!distances) return
-		const assignResult = await assignAuction({ distances })
+		const assignResult = await assignAuctionFixed({ distances })
 		if (!assignResult) return
 
-		setAuctionResult(assignResult)
-		setSelectedTab('auction')
+		setAuctionFixedResult(assignResult)
+		setSelectedTab('auction-fixed')
+	}
+
+	const onAuctionScaledAssign = async () => {
+		if (!distances) return
+		const assignResult = await assignAuctionScaled({ distances })
+		if (!assignResult) return
+
+		setAuctionScaledResult(assignResult)
+		setSelectedTab('auction-scaled')
 	}
 
 	if (!isLoaded) return <div>Loading map...</div>
@@ -117,7 +130,8 @@ export default function App() {
 						taxiDrivers={taxiDrivers}
 						clients={clients}
 						hungarianResult={hungarianResult}
-						auctionResult={auctionResult}
+						auctionFixedResult={auctionFixedResult}
+						auctionScaledResult={auctionScaledResult}
 					/>
 				)}
 				<MapLegend />
@@ -144,15 +158,17 @@ export default function App() {
 					<Box mt='7'>
 						<AssignmentButtons
 							onHungarianAssign={onHungarianAssign}
-							onAuctionAssign={onAuctionAssign}
+							onAuctionFixedAssign={onAuctionFixedAssign}
+							onAuctionScaledAssign={onAuctionScaledAssign}
 						/>
 					</Box>
 				)}
-				{(hungarianResult || auctionResult) && (
+				{(hungarianResult || auctionFixedResult || auctionScaledResult) && (
 					<Box mt='6'>
 						<AssignmentResultCard
 							hungarianResult={hungarianResult}
-							auctionResult={auctionResult}
+							auctionFixedResult={auctionFixedResult}
+							auctionScaledResult={auctionScaledResult}
 							selectedTab={selectedTab}
 							setSelectedTab={setSelectedTab}
 						/>

@@ -11,7 +11,8 @@ interface MapMarkersProps {
 	taxiDrivers: TaxiDriver[]
 	clients: Client[]
 	hungarianResult: AssignmentResult | null
-	auctionResult: AssignmentResult | null
+	auctionFixedResult: AssignmentResult | null
+	auctionScaledResult: AssignmentResult | null
 }
 
 export interface AssignmentLineStyle {
@@ -21,15 +22,21 @@ export interface AssignmentLineStyle {
 }
 
 export const HungarianStyle: AssignmentLineStyle = {
+	color: 'lime',
+	strokeWeight: 4,
+	zIndex: 1,
+}
+
+export const AuctionFixedStyle: AssignmentLineStyle = {
 	color: 'blue',
 	strokeWeight: 2,
 	zIndex: 2,
 }
 
-export const AuctionStyle: AssignmentLineStyle = {
+export const AuctionScaledStyle: AssignmentLineStyle = {
 	color: 'red',
-	strokeWeight: 4,
-	zIndex: 1,
+	strokeWeight: 6,
+	zIndex: 0,
 }
 
 export default function MapMarkers({
@@ -37,7 +44,8 @@ export default function MapMarkers({
 	taxiDrivers,
 	clients,
 	hungarianResult,
-	auctionResult,
+	auctionFixedResult,
+	auctionScaledResult,
 }: MapMarkersProps) {
 	const infoWindowsRef = useRef<google.maps.InfoWindow[]>([])
 	const markersRef = useRef<google.maps.Marker[]>([])
@@ -55,7 +63,8 @@ export default function MapMarkers({
 		const hasAnimation =
 			taxiDrivers.length + clients.length <= 400 &&
 			!hungarianResult &&
-			!auctionResult
+			!auctionFixedResult &&
+			!auctionScaledResult
 
 		// Creating taxi driver markers
 		taxiDrivers.forEach(t => {
@@ -121,7 +130,14 @@ export default function MapMarkers({
 			marker.addListener('click', () => {
 				allInfoWindows.forEach(iw => iw.close())
 				infoWindow.open(map, marker)
-				drawAssignmentLines(map, t, clients, hungarianResult, auctionResult)
+				drawAssignmentLines(
+					map,
+					t,
+					clients,
+					hungarianResult,
+					auctionFixedResult,
+					auctionScaledResult
+				)
 			})
 
 			allInfoWindows.push(infoWindow)
@@ -163,7 +179,8 @@ export default function MapMarkers({
 					c,
 					taxiDrivers,
 					hungarianResult,
-					auctionResult
+					auctionFixedResult,
+					auctionScaledResult
 				)
 			})
 
@@ -185,7 +202,14 @@ export default function MapMarkers({
 			mapClickListener.remove()
 			clearMapElements()
 		}
-	}, [map, taxiDrivers, clients, hungarianResult, auctionResult])
+	}, [
+		map,
+		taxiDrivers,
+		clients,
+		hungarianResult,
+		auctionFixedResult,
+		auctionScaledResult,
+	])
 
 	function clearMapElements() {
 		infoWindowsRef.current.forEach(iw => iw.close())
@@ -213,7 +237,8 @@ export default function MapMarkers({
 		taxi: TaxiDriver,
 		clients: Client[],
 		hungarianResult: AssignmentResult | null,
-		auctionResult: AssignmentResult | null
+		auctionFixedResult: AssignmentResult | null,
+		auctionScaledResult: AssignmentResult | null
 	) {
 		clearPolylines()
 
@@ -232,14 +257,26 @@ export default function MapMarkers({
 			}
 		}
 
-		if (auctionResult?.assignment[taxiIndex] !== undefined) {
-			const clientIndex = auctionResult.assignment[taxiIndex]
+		if (auctionFixedResult?.assignment[taxiIndex] !== undefined) {
+			const clientIndex = auctionFixedResult.assignment[taxiIndex]
 			if (clientIndex !== -1 && clients[clientIndex]) {
 				drawLine(
 					map,
 					taxi.location,
 					clients[clientIndex].location,
-					AuctionStyle
+					AuctionFixedStyle
+				)
+			}
+		}
+
+		if (auctionScaledResult?.assignment[taxiIndex] !== undefined) {
+			const clientIndex = auctionScaledResult.assignment[taxiIndex]
+			if (clientIndex !== -1 && clients[clientIndex]) {
+				drawLine(
+					map,
+					taxi.location,
+					clients[clientIndex].location,
+					AuctionScaledStyle
 				)
 			}
 		}
@@ -251,7 +288,8 @@ export default function MapMarkers({
 		client: Client,
 		taxiDrivers: TaxiDriver[],
 		hungarianResult: AssignmentResult | null,
-		auctionResult: AssignmentResult | null
+		auctionFixedResult: AssignmentResult | null,
+		auctionScaledResult: AssignmentResult | null
 	) {
 		clearPolylines()
 
@@ -272,15 +310,29 @@ export default function MapMarkers({
 			})
 		}
 
-		// For auction
-		if (auctionResult) {
-			auctionResult.assignment.forEach((cIndex, tIndex) => {
+		// For auction fixed
+		if (auctionFixedResult) {
+			auctionFixedResult.assignment.forEach((cIndex, tIndex) => {
 				if (cIndex === clientIndex) {
 					drawLine(
 						map,
 						taxiDrivers[tIndex].location,
 						client.location,
-						AuctionStyle
+						AuctionFixedStyle
+					)
+				}
+			})
+		}
+
+		// For auction scaled
+		if (auctionScaledResult) {
+			auctionScaledResult.assignment.forEach((cIndex, tIndex) => {
+				if (cIndex === clientIndex) {
+					drawLine(
+						map,
+						taxiDrivers[tIndex].location,
+						client.location,
+						AuctionScaledStyle
 					)
 				}
 			})

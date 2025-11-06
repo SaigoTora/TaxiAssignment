@@ -3,12 +3,14 @@ import { useState } from 'react'
 
 interface AssignmentButtonsProps {
 	onHungarianAssign: () => Promise<void> | void
-	onAuctionAssign: () => Promise<void> | void
+	onAuctionFixedAssign: () => Promise<void> | void
+	onAuctionScaledAssign: () => Promise<void> | void
 }
 
 export default function AssignmentButtons({
 	onHungarianAssign,
-	onAuctionAssign,
+	onAuctionFixedAssign,
+	onAuctionScaledAssign,
 }: AssignmentButtonsProps) {
 	const [isLoading, setIsLoading] = useState(false)
 
@@ -42,7 +44,23 @@ export default function AssignmentButtons({
 			</Button>
 
 			<Button
-				onClick={() => handleClick(onAuctionAssign)}
+				onClick={() => handleClick(onAuctionFixedAssign)}
+				bgColor='green.solid'
+				color='white'
+				_hover={{ bg: 'green.emphasized' }}
+				_active={{ bg: 'green.800' }}
+				_disabled={{ bg: 'green.700' }}
+				transition='background-color 0.35s ease'
+				fontWeight='bold'
+				fontSize='md'
+				marginBottom='2'
+				disabled={isLoading}
+			>
+				{isLoading ? 'Processing...' : '⚖️ Auction (Fixed ε)'}
+			</Button>
+
+			<Button
+				onClick={() => handleClick(onAuctionScaledAssign)}
 				bgColor='green.solid'
 				color='white'
 				_hover={{ bg: 'green.emphasized' }}
@@ -53,7 +71,7 @@ export default function AssignmentButtons({
 				fontSize='md'
 				disabled={isLoading}
 			>
-				{isLoading ? 'Processing...' : '💰 Auction Algorithm'}
+				{isLoading ? 'Processing...' : '📈 Auction (ε-Scaling)'}
 			</Button>
 		</div>
 	)

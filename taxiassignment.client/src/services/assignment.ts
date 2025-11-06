@@ -26,10 +26,23 @@ export const assignHungarian = async (assignData: AssignData) => {
 	}
 }
 
-export const assignAuction = async (assignData: AssignData) => {
+export const assignAuctionFixed = async (assignData: AssignData) => {
 	try {
 		var response = await axios.post(
-			'https://localhost:7264/assignments/auction',
+			'https://localhost:7264/assignments/auction-fixed',
+			assignData
+		)
+
+		return response.data
+	} catch (ex) {
+		console.error(ex)
+	}
+}
+
+export const assignAuctionScaled = async (assignData: AssignData) => {
+	try {
+		var response = await axios.post(
+			'https://localhost:7264/assignments/auction-scaled',
 			assignData
 		)
 
