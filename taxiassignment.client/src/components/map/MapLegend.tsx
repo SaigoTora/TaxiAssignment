@@ -1,4 +1,4 @@
-import { Box, Flex, Text } from '@chakra-ui/react'
+﻿import { Box, Flex, Text } from '@chakra-ui/react'
 import {
 	HungarianStyle,
 	AuctionFixedStyle,
@@ -34,7 +34,7 @@ export default function MapLegend() {
 					h={`${AuctionFixedStyle.strokeWeight}px`}
 					bg={AuctionFixedStyle.color}
 				/>
-				<Text>Auction with fixed epsilon</Text>
+				<Text>Auction with fixed ε</Text>
 			</Flex>
 
 			<Flex align='center' gap='6px'>
@@ -43,7 +43,7 @@ export default function MapLegend() {
 					h={`${AuctionScaledStyle.strokeWeight}px`}
 					bg={AuctionScaledStyle.color}
 				/>
-				<Text>Auction with scaled epsilon</Text>
+				<Text>Auction with scaled ε</Text>
 			</Flex>
 		</Box>
 	)

@@ -50,6 +50,7 @@ export default function MapMarkers({
 	const infoWindowsRef = useRef<google.maps.InfoWindow[]>([])
 	const markersRef = useRef<google.maps.Marker[]>([])
 	const polylinesRef = useRef<google.maps.Polyline[]>([])
+	const lastClickedRef = useRef<number | null>(null)
 
 	useEffect(() => {
 		if (!map) return
@@ -128,6 +129,9 @@ export default function MapMarkers({
 			infoWindow.addListener('domready', hideDefaultGoogleInfoUI)
 
 			marker.addListener('click', () => {
+				if (lastClickedRef.current === t.id) return
+				lastClickedRef.current = t.id
+
 				allInfoWindows.forEach(iw => iw.close())
 				infoWindow.open(map, marker)
 				drawAssignmentLines(
@@ -172,6 +176,9 @@ export default function MapMarkers({
 			infoWindow.addListener('domready', hideDefaultGoogleInfoUI)
 
 			marker.addListener('click', () => {
+				if (lastClickedRef.current === c.id) return
+				lastClickedRef.current = c.id
+
 				allInfoWindows.forEach(iw => iw.close())
 				infoWindow.open(map, marker)
 				drawAssignmentLinesForClient(
@@ -190,6 +197,8 @@ export default function MapMarkers({
 
 		// Closing windows and clearing lines when clicking on the map
 		const mapClickListener = map.addListener('click', () => {
+			lastClickedRef.current = null
+
 			allInfoWindows.forEach(iw => iw.close())
 			clearPolylines()
 		})
