@@ -9,6 +9,7 @@ export type GenerateData = {
 export type GenerateDataFormProps = {
 	onGenerate: (data: GenerateData) => void
 	onChange?: (data: GenerateData) => void
+	disabled?: boolean
 }
 
 export type AssignData = {

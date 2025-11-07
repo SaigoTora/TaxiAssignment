@@ -35,6 +35,7 @@ export default function App() {
 	const [auctionScaledResult, setAuctionScaledResult] =
 		useState<AssignmentResult | null>(null)
 	const [selectedTab, setSelectedTab] = useState<string | null>(null)
+	const [isAssignmentRunning, setIsAssignmentRunning] = useState(false)
 
 	const CITY_CENTERS: Record<City, google.maps.LatLngLiteral> = {
 		Kyiv: { lat: 50.455, lng: 30.55 },
@@ -153,6 +154,7 @@ export default function App() {
 				<GenerateDataForm
 					onGenerate={onGenerate}
 					onChange={onInputDataChange}
+					disabled={isAssignmentRunning}
 				/>
 				{isDataReady && (
 					<Box mt='7'>
@@ -160,6 +162,7 @@ export default function App() {
 							onHungarianAssign={onHungarianAssign}
 							onAuctionFixedAssign={onAuctionFixedAssign}
 							onAuctionScaledAssign={onAuctionScaledAssign}
+							onLoadingChange={setIsAssignmentRunning}
 						/>
 					</Box>
 				)}

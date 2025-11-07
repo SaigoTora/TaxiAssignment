@@ -5,21 +5,26 @@ interface AssignmentButtonsProps {
 	onHungarianAssign: () => Promise<void> | void
 	onAuctionFixedAssign: () => Promise<void> | void
 	onAuctionScaledAssign: () => Promise<void> | void
+	onLoadingChange?: (isLoading: boolean) => void
 }
 
 export default function AssignmentButtons({
 	onHungarianAssign,
 	onAuctionFixedAssign,
 	onAuctionScaledAssign,
+	onLoadingChange,
 }: AssignmentButtonsProps) {
 	const [isLoading, setIsLoading] = useState(false)
 
 	const handleClick = async (action: () => Promise<void> | void) => {
 		setIsLoading(true)
+		onLoadingChange?.(true)
+
 		try {
 			await action()
 		} finally {
 			setIsLoading(false)
+			onLoadingChange?.(false)
 		}
 	}
 
