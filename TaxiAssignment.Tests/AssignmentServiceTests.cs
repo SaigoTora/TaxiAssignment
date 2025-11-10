@@ -4,23 +4,36 @@ using TaxiAssignment.Server.Services;
 
 namespace TaxiAssignment.Tests
 {
+	enum AssignmentResultType
+	{
+		Exact,
+		Approximate
+	}
+
+
 	public class AssignmentServiceTests
 	{
 		private const double EPSILON_PRECISION = 1.0;
 
+		private static readonly HungarianAssignmentService _hungarian = new();
+		private static readonly AuctionFixedEpsilonService _auctionFixed = new();
+		private static readonly AuctionScaledEpsilonService _auctionScaled = new();
+
 		private readonly Dictionary<IAssignmentService, Func<double[,], bool, AssignmentRequest>>
 			_serviceToRequestMap = new()
 			{
-				[new HungarianAssignmentService()] = (costs, findMax)
-					=> new AssignmentRequest(costs, findMax),
-
-				[new AuctionFixedEpsilonService()] = (costs, findMax)
-					=> new AssignmentRequest(costs, findMax),
-
-				[new AuctionScaledEpsilonService()] = (costs, findMax)
-					=> new AuctionScaledRequest(costs, findMax, EPSILON_PRECISION)
+				[_hungarian] = (costs, findMax) => new AssignmentRequest(costs, findMax),
+				[_auctionFixed] = (costs, findMax) => new AssignmentRequest(costs, findMax),
+				[_auctionScaled] = (costs, findMax) => new AuctionScaledRequest(costs, findMax,
+					EPSILON_PRECISION)
 			};
-
+		private readonly Dictionary<IAssignmentService, AssignmentResultType>
+			_serviceResultTypeMap = new()
+			{
+				[_hungarian] = AssignmentResultType.Exact,
+				[_auctionFixed] = AssignmentResultType.Exact,
+				[_auctionScaled] = AssignmentResultType.Approximate
+			};
 
 		[Fact]
 		public void Solve_5x5Matrix_Maximize_ReturnsExpectedAssignment()
@@ -60,13 +73,14 @@ namespace TaxiAssignment.Tests
 			bool findMax = true;
 
 			// Act
+			int[] expected = [3, 0, 1, 4, 2];
 			foreach (var serviceRequest in _serviceToRequestMap)
 			{
-				int[] result = serviceRequest.Key.Solve(serviceRequest.Value(matrix, findMax));
+				IAssignmentService assignmentService = serviceRequest.Key;
+				int[] result = assignmentService.Solve(serviceRequest.Value(matrix, findMax));
 
 				// Assert
-				int[] expected = [3, 0, 1, 4, 2];
-				Assert.Equal(expected, result);
+				Assert.True(IsAssignmentValid(assignmentService, matrix, expected, result));
 			}
 		}
 
@@ -87,26 +101,14 @@ namespace TaxiAssignment.Tests
 			bool findMax = true;
 
 			// Act
+			int[] expected = [1, -1, 0];
 			foreach (var serviceRequest in _serviceToRequestMap)
 			{
-				int[] result = serviceRequest.Key.Solve(serviceRequest.Value(matrix, findMax));
-
-				int[] expected = [1, -1, 0];
-				double expectedSum = 0, actualSum = 0;
-				for (int i = 0; i < expected.Length; i++)
-				{
-					if (expected[i] != -1)
-						expectedSum += matrix[i, expected[i]];
-					if (result[i] != -1)
-						actualSum += matrix[i, result[i]];
-				}
+				IAssignmentService assignmentService = serviceRequest.Key;
+				int[] result = assignmentService.Solve(serviceRequest.Value(matrix, findMax));
 
 				// Assert
-				// Check that the total assignment value is within allowed deviation,
-				// because the auction algorithm with epsilon scaling may not produce 
-				// the exact optimal assignment even at maximum precision.
-				const double ALLOWED_DEVIATION = 1;
-				Assert.True(Math.Abs(expectedSum - actualSum) <= ALLOWED_DEVIATION);
+				Assert.True(IsAssignmentValid(assignmentService, matrix, expected, result));
 			}
 		}
 
@@ -133,17 +135,24 @@ namespace TaxiAssignment.Tests
 			bool findMax = true;
 
 			// Act
+			int[] firstExpected = [2, 0, 1];
+			int[] secondExpected = [2, 3, 1];
 			foreach (var serviceRequest in _serviceToRequestMap)
 			{
-				int[] result = serviceRequest.Key.Solve(serviceRequest.Value(matrix, findMax));
+				IAssignmentService assignmentService = serviceRequest.Key;
+				int[] result = assignmentService.Solve(serviceRequest.Value(matrix, findMax));
 
 				// Assert
-				int[] firstExpected = [2, 0, 1];
-				bool firstCondition = result.SequenceEqual(firstExpected);
-				int[] secondExpected = [2, 3, 1];
-				bool secondCondition = result.SequenceEqual(secondExpected);
-
-				Assert.True(firstCondition || secondCondition);
+				bool isValidFirstExpected = IsAssignmentValid(assignmentService, matrix,
+					firstExpected, result);
+				if (isValidFirstExpected)
+					Assert.True(isValidFirstExpected);
+				else
+				{
+					bool isValidSecondExpected = IsAssignmentValid(assignmentService, matrix,
+						secondExpected, result);
+					Assert.True(isValidSecondExpected);
+				}
 			}
 		}
 
@@ -167,13 +176,14 @@ namespace TaxiAssignment.Tests
 			bool findMax = false;
 
 			// Act
+			int[] expected = [0, 1, 2];
 			foreach (var serviceRequest in _serviceToRequestMap)
 			{
-				int[] result = serviceRequest.Key.Solve(serviceRequest.Value(matrix, findMax));
+				IAssignmentService assignmentService = serviceRequest.Key;
+				int[] result = assignmentService.Solve(serviceRequest.Value(matrix, findMax));
 
 				// Assert
-				int[] expected = [0, 1, 2];
-				Assert.Equal(expected, result);
+				Assert.True(IsAssignmentValid(assignmentService, matrix, expected, result));
 			}
 		}
 
@@ -210,13 +220,14 @@ namespace TaxiAssignment.Tests
 			bool findMax = false;
 
 			// Act
+			int[] expected = [0, 2, 3, -1, 1];
 			foreach (var serviceRequest in _serviceToRequestMap)
 			{
-				int[] result = serviceRequest.Key.Solve(serviceRequest.Value(matrix, findMax));
+				IAssignmentService assignmentService = serviceRequest.Key;
+				int[] result = assignmentService.Solve(serviceRequest.Value(matrix, findMax));
 
 				// Assert
-				int[] expected = [0, 2, 3, -1, 1];
-				Assert.Equal(expected, result);
+				Assert.True(IsAssignmentValid(assignmentService, matrix, expected, result));
 			}
 		}
 
@@ -243,14 +254,44 @@ namespace TaxiAssignment.Tests
 			bool findMax = false;
 
 			// Act
+			int[] expected = [0, 3, 2];
 			foreach (var serviceRequest in _serviceToRequestMap)
 			{
-				int[] result = serviceRequest.Key.Solve(serviceRequest.Value(matrix, findMax));
+				IAssignmentService assignmentService = serviceRequest.Key;
+				int[] result = assignmentService.Solve(serviceRequest.Value(matrix, findMax));
 
 				// Assert
-				int[] expected = [0, 3, 2];
-				Assert.Equal(expected, result);
+				Assert.True(IsAssignmentValid(assignmentService, matrix, expected, result));
 			}
+		}
+
+
+		private bool IsAssignmentValid(IAssignmentService assignmentService, double[,] matrix,
+			int[] expected, int[] result)
+		{
+			if (_serviceResultTypeMap[assignmentService] == AssignmentResultType.Exact)
+				return result.SequenceEqual(expected);
+			else if (_serviceResultTypeMap[assignmentService] == AssignmentResultType.Approximate)
+				return IsApproximateAssignmentValid(matrix, expected, result);
+
+			return false;
+		}
+		private static bool IsApproximateAssignmentValid(double[,] matrix, int[] expectedResult,
+			int[] actualResult)
+		{
+			const double ALLOWED_DEVIATION = 1;
+			double expectedSum = 0, actualSum = 0;
+
+			for (int i = 0; i < expectedResult.Length; i++)
+			{
+				if (expectedResult[i] != -1)
+					expectedSum += matrix[i, expectedResult[i]];
+				if (actualResult[i] != -1)
+					actualSum += matrix[i, actualResult[i]];
+			}
+
+			// Check that the total assignment value is within allowed deviation
+			return Math.Abs(expectedSum - actualSum) <= ALLOWED_DEVIATION;
 		}
 	}
 }
