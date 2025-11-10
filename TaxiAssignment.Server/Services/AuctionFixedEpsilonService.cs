@@ -1,9 +1,13 @@
-﻿namespace TaxiAssignment.Server.Services
+﻿using TaxiAssignment.Server.Models;
+
+namespace TaxiAssignment.Server.Services
 {
 	public class AuctionFixedEpsilonService : AuctionAssignmentService
 	{
-		protected override double[,] CreateSquareMatrix(double[,] costs, bool findMax)
+		protected override double[,] CreateSquareMatrix(AssignmentRequest request)
 		{
+			double[,] costs = request.Costs;
+
 			int n = costs.GetLength(0), m = costs.GetLength(1);
 			if (n == m)
 				return costs;
@@ -12,7 +16,7 @@
 			double[,] result = new double[maxLength, maxLength];
 			double fillValue = costs[0, 0];
 
-			if (findMax)
+			if (request.FindMax)
 				for (int i = 0; i < costs.GetLength(0); i++)
 					for (int j = 0; j < costs.GetLength(1); j++)
 					{
@@ -42,6 +46,7 @@
 
 			return result;
 		}
-		protected override double CalculateEpsilon(double[,] costs, int n) => 1.0 / (n + 1);
+		protected override double CalculateEpsilon(double[,] costs, int n, double? epsilonPrecision)
+			=> 1.0 / (n + 1);
 	}
 }

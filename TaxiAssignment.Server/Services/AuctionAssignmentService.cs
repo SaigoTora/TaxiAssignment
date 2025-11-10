@@ -1,4 +1,5 @@
 ﻿using TaxiAssignment.Server.Interfaces;
+using TaxiAssignment.Server.Models;
 
 namespace TaxiAssignment.Server.Services
 {
@@ -11,9 +12,15 @@ namespace TaxiAssignment.Server.Services
 		private int[] _agentsTasks = [];
 		private double[] _prices = [];
 
-		public int[] Solve(double[,] costs, bool findMax)
+		public int[] Solve(AssignmentRequest request)
 		{
+			ArgumentNullException.ThrowIfNull(request);
+			ArgumentNullException.ThrowIfNull(request.Costs);
+
 			ResetAuctionState();
+
+			// Clone the matrix to avoid modifying the original input
+			double[,] costs = (double[,])request.Costs.Clone();
 
 			int n = costs.GetLength(0), m = costs.GetLength(1);
 			int minDimension = Math.Min(n, m);
@@ -22,7 +29,7 @@ namespace TaxiAssignment.Server.Services
 			else if (n < m) hasMoreRows = false;
 
 			if (n != m)
-				costs = CreateSquareMatrix(costs, findMax);
+				costs = CreateSquareMatrix(request);
 			n = costs.GetLength(0);
 
 			_agentsTasks = new int[n];
@@ -30,21 +37,27 @@ namespace TaxiAssignment.Server.Services
 			for (int i = 0; i < n; i++)
 				_agentsTasks[i] = -1;
 
-			return RunAuctionIteration(costs, n, findMax, minDimension, hasMoreRows);
+			double? epsilonPrecision = null;
+			if (request is AuctionScaledRequest scaledRequest)
+				epsilonPrecision = scaledRequest.EpsilonPrecision;
+
+			return RunAuctionIteration(costs, n, request.FindMax, minDimension, hasMoreRows,
+				epsilonPrecision);
 		}
 
-		protected abstract double[,] CreateSquareMatrix(double[,] costs, bool findMax);
-		protected abstract double CalculateEpsilon(double[,] costs, int n);
+		protected abstract double[,] CreateSquareMatrix(AssignmentRequest request);
+		protected abstract double CalculateEpsilon(double[,] costs, int n,
+			double? epsilonPrecision);
 		protected virtual void ResetAuctionState() { }
 
 		private int[] RunAuctionIteration(double[,] costs, int n, bool findMax, int minDimension,
-			bool? hasMoreRows)
+			bool? hasMoreRows, double? epsilonPrecision)
 		{
 			bool unassignedExists;
 			do
 			{
 				unassignedExists = false;
-				double epsilon = CalculateEpsilon(costs, n);
+				double epsilon = CalculateEpsilon(costs, n, epsilonPrecision);
 				for (int agent = 0; agent < n; agent++)
 				{
 					if (_agentsTasks[agent] != -1)

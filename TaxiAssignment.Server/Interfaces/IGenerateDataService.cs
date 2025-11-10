@@ -9,7 +9,7 @@ namespace TaxiAssignment.Server.Interfaces
 		/// Generates a list of clients and taxi drivers based on the given request.
 		/// </summary>
 		/// <param name="request">The number of clients and taxi drivers to generate.</param>
-		/// <returns>An AssignmentData object containing the generated clients and taxi drivers.</returns>
-		AssignmentData GenerateData(GenerateDataRequest request);
+		/// <returns>An AssignmentContext object containing the generated clients and taxi drivers.</returns>
+		AssignmentContext GenerateContext(GenerateDataRequest request);
 	}
 }

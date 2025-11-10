@@ -11,13 +11,20 @@ namespace TaxiAssignment.Server.Services
 		public AssignmentResult Run(IAssignmentService assignmentService,
 			GenerateAssignRequest request)
 		{
-			long memoryBefore = GC.GetTotalMemory(true), memoryAfter;
+			AssignmentRequest assignmentRequest;
+			if (request.EpsilonPrecision.HasValue)
+				assignmentRequest = new AuctionScaledRequest(request.Distances, false,
+					request.EpsilonPrecision.Value);
+			else
+				assignmentRequest = new AssignmentRequest(request.Distances, false);
 
+			long memoryBefore = GC.GetTotalMemory(true), memoryAfter;
 			Stopwatch sw = new();
 			sw.Start();
-			int[] assignment = assignmentService.Solve(request.Distances, false);
-			sw.Stop();
 
+			int[] assignment = assignmentService.Solve(assignmentRequest);
+
+			sw.Stop();
 			memoryAfter = GC.GetTotalMemory(false);
 			long memoryUsedBytes = memoryAfter - memoryBefore;
 

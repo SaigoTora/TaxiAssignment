@@ -1,12 +1,16 @@
-﻿namespace TaxiAssignment.Server.Services
+﻿using TaxiAssignment.Server.Models;
+
+namespace TaxiAssignment.Server.Services
 {
 	public class AuctionScaledEpsilonService : AuctionAssignmentService
 	{
 		private double? _min, _max;
 		private double? _epsilon;
 
-		protected override double[,] CreateSquareMatrix(double[,] costs, bool findMax)
+		protected override double[,] CreateSquareMatrix(AssignmentRequest request)
 		{
+			double[,] costs = request.Costs;
+
 			int n = costs.GetLength(0), m = costs.GetLength(1);
 			if (n == m)
 				return costs;
@@ -24,7 +28,7 @@
 					_max = Math.Max(_max.Value, costs[i, j]);
 				}
 
-			double fillValue = findMax ? _min.Value : _max.Value;
+			double fillValue = request.FindMax ? _min.Value : _max.Value;
 
 			if (costs.GetLength(0) > costs.GetLength(1))
 			{// If there are more rows than columns
@@ -41,10 +45,12 @@
 
 			return result;
 		}
-		protected override double CalculateEpsilon(double[,] costs, int n)
+		protected override double CalculateEpsilon(double[,] costs, int n, double? epsilonPrecision)
 		{
 			const double STEP = 5;
-			const double ACCURACY = 0.5;// [0; 1]
+			const double DEFAULT_EPSILON_PRECISION = 0.5;
+
+			epsilonPrecision ??= DEFAULT_EPSILON_PRECISION;
 
 			if (!_epsilon.HasValue)
 			{
@@ -67,7 +73,8 @@
 				double epsilonMin = 1.0 / n;
 				double epsilonMax = (_max.Value - _min.Value) / n;
 
-				double epsilonThreshold = (1 - ACCURACY) * epsilonMax + ACCURACY * epsilonMin;
+				double epsilonThreshold = (1 - epsilonPrecision.Value) * epsilonMax
+					+ epsilonPrecision.Value * epsilonMin;
 
 				if (_epsilon.Value > epsilonThreshold)
 					_epsilon /= STEP;

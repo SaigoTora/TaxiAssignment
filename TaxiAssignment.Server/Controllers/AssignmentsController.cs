@@ -35,8 +35,8 @@ namespace TaxiAssignment.Server.Controllers
 		[HttpPost("generate-data")]
 		public IActionResult GenerateData([FromBody] GenerateDataRequest request)
 		{
-			AssignmentData assignmentData = _generateDataService.GenerateData(request);
-			return Ok(assignmentData);
+			AssignmentContext assignmentContext = _generateDataService.GenerateContext(request);
+			return Ok(assignmentContext);
 		}
 
 		[HttpPost("hungarian")]

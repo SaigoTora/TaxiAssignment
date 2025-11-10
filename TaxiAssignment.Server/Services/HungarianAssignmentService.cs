@@ -1,4 +1,5 @@
 ﻿using TaxiAssignment.Server.Interfaces;
+using TaxiAssignment.Server.Models;
 
 namespace TaxiAssignment.Server.Services
 {
@@ -9,18 +10,19 @@ namespace TaxiAssignment.Server.Services
 
 		private const double EPSILON = 1e-9;
 
-		public int[] Solve(double[,] costs, bool findMax)
+		public int[] Solve(AssignmentRequest request)
 		{
-			ArgumentNullException.ThrowIfNull(costs);
+			ArgumentNullException.ThrowIfNull(request);
+			ArgumentNullException.ThrowIfNull(request.Costs);
 
 			// Clone the matrix to avoid modifying the original input
-			costs = (double[,])costs.Clone();
+			double[,] costs = (double[,])request.Costs.Clone();
 
 			int n = costs.GetLength(0), m = costs.GetLength(1);// Initial matrix dimensions
 			if (costs.GetLength(0) != costs.GetLength(1))
 				costs = CreateSquareMatrix(costs);
 
-			if (findMax)
+			if (request.FindMax)
 			{// If the assignment is resolved to the maximum
 				for (int i = 0; i < costs.GetLength(0); i++)
 				{

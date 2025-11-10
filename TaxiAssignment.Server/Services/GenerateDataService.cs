@@ -63,13 +63,13 @@ namespace TaxiAssignment.Server.Services
 			_random = random;
 		}
 
-		public AssignmentData GenerateData(GenerateDataRequest request)
+		public AssignmentContext GenerateContext(GenerateDataRequest request)
 		{
 			TaxiDriver[] taxiDrivers = GenerateRandomTaxiDrivers(request.City, request.TaxiDriversCount);
 			Client[] clients = GenerateRandomClients(request.City, request.ClientCount);
 			double[,] distances = CalculateDistances(taxiDrivers, clients);
 
-			return new AssignmentData(taxiDrivers, clients, distances);
+			return new AssignmentContext(taxiDrivers, clients, distances);
 		}
 
 		private TaxiDriver[] GenerateRandomTaxiDrivers(City city, int count)
