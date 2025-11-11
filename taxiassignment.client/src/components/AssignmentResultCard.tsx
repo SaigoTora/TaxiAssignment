@@ -6,6 +6,7 @@ interface Props {
 	auctionFixedResult: AssignmentResult | null
 	auctionScaledResult: AssignmentResult | null
 	selectedTab: string | null
+	epsilonPrecision: number | null
 	setSelectedTab: (tab: string) => void
 }
 
@@ -14,6 +15,7 @@ export default function AssignmentResultCard({
 	auctionFixedResult,
 	auctionScaledResult,
 	selectedTab,
+	epsilonPrecision,
 	setSelectedTab,
 }: Props) {
 	const hasHungarian = !!hungarianResult
@@ -95,7 +97,13 @@ export default function AssignmentResultCard({
 			)}
 
 			{hasAuctionScaled && (
-				<Tabs.Content value='auction-scaled'>
+				<Tabs.Content position='relative' value='auction-scaled'>
+					{epsilonPrecision != null && (
+						<div className='absolute top-4 right-3 text-xs text-gray-500 select-none'>
+							ε precision:{' '}
+							<span className='select-text'>{epsilonPrecision}</span>
+						</div>
+					)}
 					<ResultPanel result={auctionScaledResult!} />
 				</Tabs.Content>
 			)}
@@ -129,23 +137,25 @@ function ResultPanel({ result }: { result: AssignmentResult }) {
 
 	return (
 		<div className='bg-gray-50 border border-gray-200 rounded-2xl shadow-sm p-5 w-full max-w-md'>
-			<h3 className='text-lg font-semibold text-gray-800 mb-4 text-center'>
+			<h3 className='text-lg font-semibold text-gray-800 mt-1 mb-4 text-center'>
 				Assignment Results
 			</h3>
 
-			<div className='space-y-3 text-base text-gray-700'>
+			<div className='space-y-3 text-base mb-1 text-gray-700'>
 				<div className='flex justify-between'>
 					<span>Execution time:</span>
 					<span className='font-medium'>
 						{formatTime(result.executionTimeMs)}
 					</span>
 				</div>
+
 				<div className='flex justify-between'>
 					<span>Memory used:</span>
 					<span className='font-medium'>
 						{formatMemory(result.memoryUsedBytes)}
 					</span>
 				</div>
+
 				<div className='flex justify-between'>
 					<span>Total distance:</span>
 					<span className='font-medium'>

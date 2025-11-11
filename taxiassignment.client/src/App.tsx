@@ -36,6 +36,7 @@ export default function App() {
 		useState<AssignmentResult | null>(null)
 	const [selectedTab, setSelectedTab] = useState<string | null>(null)
 	const [isAssignmentRunning, setIsAssignmentRunning] = useState(false)
+	const [epsilonPrecision, setEpsilonPrecision] = useState<number | null>(null)
 
 	const CITY_CENTERS: Record<City, google.maps.LatLngLiteral> = {
 		Kyiv: { lat: 50.455, lng: 30.55 },
@@ -105,11 +106,15 @@ export default function App() {
 		setSelectedTab('auction-fixed')
 	}
 
-	const onAuctionScaledAssign = async () => {
+	const onAuctionScaledAssign = async (epsilonPrecision: number) => {
 		if (!distances) return
-		const assignResult = await assignAuctionScaled({ distances })
+		const assignResult = await assignAuctionScaled({
+			distances,
+			epsilonPrecision,
+		})
 		if (!assignResult) return
 
+		setEpsilonPrecision(epsilonPrecision)
 		setAuctionScaledResult(assignResult)
 		setSelectedTab('auction-scaled')
 	}
@@ -174,6 +179,7 @@ export default function App() {
 							auctionScaledResult={auctionScaledResult}
 							selectedTab={selectedTab}
 							setSelectedTab={setSelectedTab}
+							epsilonPrecision={epsilonPrecision}
 						/>
 					</Box>
 				)}

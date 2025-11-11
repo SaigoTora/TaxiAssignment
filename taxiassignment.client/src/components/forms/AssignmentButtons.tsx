@@ -1,10 +1,11 @@
 import { Button } from '@chakra-ui/react'
 import { useState } from 'react'
+import EpsilonPrecisionDialog from './EpsilonPrecisionModal'
 
 interface AssignmentButtonsProps {
 	onHungarianAssign: () => Promise<void> | void
 	onAuctionFixedAssign: () => Promise<void> | void
-	onAuctionScaledAssign: () => Promise<void> | void
+	onAuctionScaledAssign: (epsilon: number) => Promise<void> | void
 	onLoadingChange?: (isLoading: boolean) => void
 }
 
@@ -15,6 +16,7 @@ export default function AssignmentButtons({
 	onLoadingChange,
 }: AssignmentButtonsProps) {
 	const [isLoading, setIsLoading] = useState(false)
+	const [isEpsilonDialogOpen, setIsEpsilonDialogOpen] = useState(false)
 
 	const handleClick = async (action: () => Promise<void> | void) => {
 		setIsLoading(true)
@@ -65,7 +67,7 @@ export default function AssignmentButtons({
 			</Button>
 
 			<Button
-				onClick={() => handleClick(onAuctionScaledAssign)}
+				onClick={() => setIsEpsilonDialogOpen(true)}
 				bgColor='green.solid'
 				color='white'
 				_hover={{ bg: 'green.emphasized' }}
@@ -78,6 +80,14 @@ export default function AssignmentButtons({
 			>
 				{isLoading ? 'Processing...' : '📈 Auction (ε-Scaling)'}
 			</Button>
+
+			<EpsilonPrecisionDialog
+				isOpen={isEpsilonDialogOpen}
+				onClose={() => setIsEpsilonDialogOpen(false)}
+				onApply={epsilon => {
+					handleClick(() => onAuctionScaledAssign(epsilon))
+				}}
+			/>
 		</div>
 	)
 }

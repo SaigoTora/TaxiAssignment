@@ -1,5 +1,9 @@
 import axios from 'axios'
-import type { AssignData, GenerateData } from '../types/forms'
+import type {
+	AssignData,
+	AssignDataWithEpsilon,
+	GenerateData,
+} from '../types/forms'
 
 export const generateData = async (inputData: GenerateData) => {
 	try {
@@ -39,7 +43,9 @@ export const assignAuctionFixed = async (assignData: AssignData) => {
 	}
 }
 
-export const assignAuctionScaled = async (assignData: AssignData) => {
+export const assignAuctionScaled = async (
+	assignData: AssignDataWithEpsilon
+) => {
 	try {
 		var response = await axios.post(
 			'https://localhost:7264/assignments/auction-scaled',

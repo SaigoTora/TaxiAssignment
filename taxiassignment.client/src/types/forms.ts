@@ -15,3 +15,7 @@ export type GenerateDataFormProps = {
 export type AssignData = {
 	distances: number[][]
 }
+
+export interface AssignDataWithEpsilon extends AssignData {
+	epsilonPrecision: number
+}
