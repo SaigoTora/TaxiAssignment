@@ -91,25 +91,24 @@ export default function EpsilonPrecisionDialog({
 											/>
 										</Slider.Control>
 									</Slider.RootProvider>
-								</Stack>
 
-								<Dialog.Footer justifyContent='center'>
-									<Button
-										type='submit'
-										bgColor='green.solid'
-										color='white'
-										_hover={{ bg: 'green.emphasized' }}
-										_active={{ bg: 'green.800' }}
-										_disabled={{ bg: 'green.700' }}
-										transition='background-color 0.35s ease'
-										fontWeight='bold'
-										fontSize='lg'
-										marginBottom='2'
-										padding='3'
-									>
-										Run Algorithm
-									</Button>
-								</Dialog.Footer>
+									<Dialog.Footer justifyContent='center'>
+										<Button
+											type='submit'
+											bgColor='green.solid'
+											color='white'
+											_hover={{ bg: 'green.emphasized' }}
+											_active={{ bg: 'green.800' }}
+											_disabled={{ bg: 'green.700' }}
+											transition='background-color 0.35s ease'
+											fontWeight='bold'
+											fontSize='lg'
+											padding='3'
+										>
+											Run Algorithm
+										</Button>
+									</Dialog.Footer>
+								</Stack>
 							</form>
 						</Dialog.Body>
 

@@ -1,4 +1,4 @@
-﻿import { Box } from '@chakra-ui/react'
+﻿import { Box, IconButton } from '@chakra-ui/react'
 import { GoogleMap, useJsApiLoader } from '@react-google-maps/api'
 import GenerateDataForm from './components/forms/GenerateDataForm'
 import MapMarkers from './components/map/MapMarkers'
@@ -14,6 +14,7 @@ import AssignmentButtons from './components/forms/AssignmentButtons'
 import type { AssignmentResult, Client, TaxiDriver } from './types/assignment'
 import AssignmentResultCard from './components/AssignmentResultCard'
 import MapLegend from './components/map/MapLegend'
+import { FiChevronUp, FiChevronDown } from 'react-icons/fi'
 
 const LIBRARIES: ('places' | 'marker' | 'drawing')[] = ['marker']
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
@@ -37,6 +38,7 @@ export default function App() {
 	const [selectedTab, setSelectedTab] = useState<string | null>(null)
 	const [isAssignmentRunning, setIsAssignmentRunning] = useState(false)
 	const [epsilonPrecision, setEpsilonPrecision] = useState<number | null>(null)
+	const [isCollapsed, setIsCollapsed] = useState(false)
 
 	const CITY_CENTERS: Record<City, google.maps.LatLngLiteral> = {
 		Kyiv: { lat: 50.455, lng: 30.55 },
@@ -154,34 +156,53 @@ export default function App() {
 				shadow='md'
 				paddingBlock='7'
 				paddingInline='10'
-				width='22rem'
+				width={isCollapsed ? '7rem' : '22rem'}
 			>
-				<GenerateDataForm
-					onGenerate={onGenerate}
-					onChange={onInputDataChange}
-					disabled={isAssignmentRunning}
-				/>
-				{isDataReady && (
-					<Box mt='7'>
-						<AssignmentButtons
-							onHungarianAssign={onHungarianAssign}
-							onAuctionFixedAssign={onAuctionFixedAssign}
-							onAuctionScaledAssign={onAuctionScaledAssign}
-							onLoadingChange={setIsAssignmentRunning}
+				<IconButton
+					aria-label='Toggle panel'
+					position='absolute'
+					className='top-2 right-2'
+					onClick={() => setIsCollapsed(prev => !prev)}
+				>
+					{isCollapsed ? (
+						<FiChevronDown size={18} />
+					) : (
+						<FiChevronUp size={18} />
+					)}
+				</IconButton>
+
+				{!isCollapsed && (
+					<>
+						<GenerateDataForm
+							onGenerate={onGenerate}
+							onChange={onInputDataChange}
+							disabled={isAssignmentRunning}
 						/>
-					</Box>
-				)}
-				{(hungarianResult || auctionFixedResult || auctionScaledResult) && (
-					<Box mt='6'>
-						<AssignmentResultCard
-							hungarianResult={hungarianResult}
-							auctionFixedResult={auctionFixedResult}
-							auctionScaledResult={auctionScaledResult}
-							selectedTab={selectedTab}
-							setSelectedTab={setSelectedTab}
-							epsilonPrecision={epsilonPrecision}
-						/>
-					</Box>
+
+						{isDataReady && (
+							<Box mt='7'>
+								<AssignmentButtons
+									onHungarianAssign={onHungarianAssign}
+									onAuctionFixedAssign={onAuctionFixedAssign}
+									onAuctionScaledAssign={onAuctionScaledAssign}
+									onLoadingChange={setIsAssignmentRunning}
+								/>
+							</Box>
+						)}
+
+						{(hungarianResult || auctionFixedResult || auctionScaledResult) && (
+							<Box mt='6'>
+								<AssignmentResultCard
+									hungarianResult={hungarianResult}
+									auctionFixedResult={auctionFixedResult}
+									auctionScaledResult={auctionScaledResult}
+									selectedTab={selectedTab}
+									setSelectedTab={setSelectedTab}
+									epsilonPrecision={epsilonPrecision}
+								/>
+							</Box>
+						)}
+					</>
 				)}
 			</Box>
 		</div>
