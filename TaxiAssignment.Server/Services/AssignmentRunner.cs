@@ -12,9 +12,9 @@ namespace TaxiAssignment.Server.Services
 			GenerateAssignRequest request)
 		{
 			AssignmentRequest assignmentRequest;
-			if (request.EpsilonPrecision.HasValue)
+			if (request is GenerateAssignWithEpsilonRequest epsilonRequest)
 				assignmentRequest = new AuctionScaledRequest(request.Distances, false,
-					request.EpsilonPrecision.Value);
+					epsilonRequest.EpsilonPrecision);
 			else
 				assignmentRequest = new AssignmentRequest(request.Distances, false);
 

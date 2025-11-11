@@ -56,7 +56,8 @@ namespace TaxiAssignment.Server.Controllers
 		}
 
 		[HttpPost("auction-scaled")]
-		public IActionResult AssignAuctionScaled([FromBody] GenerateAssignRequest request)
+		public IActionResult AssignAuctionScaled(
+			[FromBody] GenerateAssignWithEpsilonRequest request)
 		{
 			AssignmentResult assignmentResult = _assignmentRunner.Run(
 				_auctionScaledAssignmentService, request);

@@ -65,7 +65,8 @@ namespace TaxiAssignment.Server.Services
 
 		public AssignmentContext GenerateContext(GenerateDataRequest request)
 		{
-			TaxiDriver[] taxiDrivers = GenerateRandomTaxiDrivers(request.City, request.TaxiDriversCount);
+			TaxiDriver[] taxiDrivers = GenerateRandomTaxiDrivers(request.City,
+				request.TaxiDriversCount);
 			Client[] clients = GenerateRandomClients(request.City, request.ClientCount);
 			double[,] distances = CalculateDistances(taxiDrivers, clients);
 

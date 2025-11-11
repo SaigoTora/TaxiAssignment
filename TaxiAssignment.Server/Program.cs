@@ -19,8 +19,10 @@ builder.Services.AddSingleton<IGenerateDataService, GenerateDataService>();
 builder.Services.AddSingleton<IGeoPointsService, GeoPointsService>();
 
 builder.Services.AddKeyedSingleton<IAssignmentService, HungarianAssignmentService>("hungarian");
-builder.Services.AddKeyedSingleton<IAssignmentService, AuctionFixedEpsilonService>("auction-fixed");
-builder.Services.AddKeyedSingleton<IAssignmentService, AuctionScaledEpsilonService>("auction-scaled");
+builder.Services.AddKeyedSingleton<IAssignmentService,
+	AuctionFixedEpsilonService>("auction-fixed");
+builder.Services.AddKeyedSingleton<IAssignmentService,
+	AuctionScaledEpsilonService>("auction-scaled");
 
 builder.Services.AddCors(options =>
 {
