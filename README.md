@@ -19,9 +19,10 @@ It simulates the optimal distribution of taxi drivers to clients using classical
 - Clicking on a driver or client displays their connection lines showing assignment routes.
 
 ### Assignment Algorithms and Results
-The system provides two methods for optimal driver-client matching:
+The system provides three methods for optimal driver-client matching:
   1. **Hungarian Algorithm**.
-  2. **Auction Algorithm**.
+  2. **Auction Algorithm with fixed ε**.
+  3. **Auction Algorithm with ε-scaling**.
 
 After running an algorithm, the application displays detailed results, including:
 - Execution time (in minutes, seconds and milliseconds).
@@ -116,7 +117,7 @@ Replace YOUR_API_KEY with the API key you generated. This key is required for di
 
 1. Enter the **city**, number of **drivers** and number of **clients**.  
 2. Click **Generate** to create the data.  
-3. Choose an **assignment algorithm** (Hungarian or Auction) and click the corresponding button.  
+3. Choose an **assignment algorithm** and click the corresponding button.  
 4. Review the **results**: execution time, memory usage, total distance and see **which driver was assigned to which client** on the map.
 
 ## Screenshots
@@ -130,10 +131,18 @@ Below are some screenshots demonstrating the key interfaces of the **Taxi Assign
 
 ![Generated Drivers and Clients](docs/screenshots/02-generated-data.png)
 
-**Auction Algorithm Results**
-
-![Auction Algorithm Results](docs/screenshots/03-assignment_results-1.png)
-
 **Hungarian Algorithm Results**
 
-![Hungarian Algorithm Results](docs/screenshots/04-assignment_results-2.png)
+![Hungarian Algorithm Results](docs/screenshots/03-hungarian-results.png)
+
+**Auction Algorithm (Fixed ε) Results**
+
+![Auction Algorithm (Fixed ε) Results](docs/screenshots/04-auction-fixed-results.png)
+
+**ε-Scaling Precision Selection**
+
+![ε-Scaling Precision Selection](docs/screenshots/05-select-epsilon-precision.png)
+
+**Auction Algorithm (Scaled ε) Results**
+
+![Auction Algorithm (Scaled ε) Results](docs/screenshots/06-auction-scaled-results.png)
