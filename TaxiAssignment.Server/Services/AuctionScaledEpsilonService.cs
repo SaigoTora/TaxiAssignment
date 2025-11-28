@@ -1,4 +1,6 @@
-﻿using TaxiAssignment.Server.Models;
+﻿using System.Diagnostics.CodeAnalysis;
+
+using TaxiAssignment.Server.Models;
 
 namespace TaxiAssignment.Server.Services
 {
@@ -17,29 +19,19 @@ namespace TaxiAssignment.Server.Services
 
 			int maxLength = Math.Max(n, m);
 			double[,] result = new double[maxLength, maxLength];
-			_min = costs[0, 0];
-			_max = costs[0, 0];
-
-			for (int i = 0; i < costs.GetLength(0); i++)
-				for (int j = 0; j < costs.GetLength(1); j++)
-				{
-					result[i, j] = costs[i, j];
-					_min = Math.Min(_min.Value, costs[i, j]);
-					_max = Math.Max(_max.Value, costs[i, j]);
-				}
+			SetMinMax(costs, (i, j) => result[i, j] = costs[i, j]);
 
 			double fillValue = request.FindMax ? _min.Value : _max.Value;
-
-			if (costs.GetLength(0) > costs.GetLength(1))
+			if (n > m)
 			{// If there are more rows than columns
-				for (int i = 0; i < costs.GetLength(0); i++)
-					for (int j = costs.GetLength(1); j < costs.GetLength(0); j++)
+				for (int i = 0; i < n; i++)
+					for (int j = m; j < n; j++)
 						result[i, j] = fillValue;
 			}
 			else
 			{// If there are more columns than rows
-				for (int i = costs.GetLength(0); i < costs.GetLength(1); i++)
-					for (int j = 0; j < costs.GetLength(1); j++)
+				for (int i = n; i < m; i++)
+					for (int j = 0; j < m; j++)
 						result[i, j] = fillValue;
 			}
 
@@ -55,17 +47,8 @@ namespace TaxiAssignment.Server.Services
 			if (!_epsilon.HasValue)
 			{
 				if (!_min.HasValue || !_max.HasValue)
-				{
-					_min = costs[0, 0];
-					_max = costs[0, 0];
+					SetMinMax(costs);
 
-					for (int i = 0; i < costs.GetLength(0); i++)
-						for (int j = 0; j < costs.GetLength(1); j++)
-						{
-							_min = Math.Min(_min.Value, costs[i, j]);
-							_max = Math.Max(_max.Value, costs[i, j]);
-						}
-				}
 				_epsilon = (_max.Value - _min.Value) / n;
 			}
 			else if (_min.HasValue && _max.HasValue)
@@ -88,6 +71,24 @@ namespace TaxiAssignment.Server.Services
 			_min = null;
 			_max = null;
 			_epsilon = null;
+		}
+
+		[MemberNotNull(nameof(_min), nameof(_max))]
+		private void SetMinMax(double[,] costs, Action<int, int>? onCell = null)
+		{
+			int n = costs.GetLength(0), m = costs.GetLength(1);
+			_min = costs[0, 0];
+			_max = costs[0, 0];
+
+			for (int i = 0; i < n; i++)
+				for (int j = 0; j < m; j++)
+				{
+					onCell?.Invoke(i, j);
+					if (costs[i, j] < _min.Value)
+						_min = costs[i, j];
+					if (costs[i, j] > _max.Value)
+						_max = costs[i, j];
+				}
 		}
 	}
 }

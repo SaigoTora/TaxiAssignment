@@ -11,6 +11,9 @@ namespace TaxiAssignment.Server.Services
 		private const int UNKNOWN_TASK = -1;
 		private const int UNKNOWN_BEST_TASK = -1;
 
+		private int _minDimension;
+		private bool? _hasMoreRows;
+
 		private int[] _agentsTasks = [];
 		private double[] _prices = [];
 
@@ -24,10 +27,19 @@ namespace TaxiAssignment.Server.Services
 			double[,] costs = request.Costs;
 
 			int n = costs.GetLength(0), m = costs.GetLength(1);
-			int minDimension = Math.Min(n, m);
-			bool? hasMoreRows = null;
-			if (n > m) hasMoreRows = true;
-			else if (n < m) hasMoreRows = false;
+			_hasMoreRows = null;
+			if (n > m)
+			{
+				_minDimension = m;
+				_hasMoreRows = true;
+			}
+			else if (n < m)
+			{
+				_minDimension = n;
+				_hasMoreRows = false;
+			}
+			else
+				_minDimension = n;
 
 			if (n != m)
 				costs = CreateSquareMatrix(request);
@@ -42,8 +54,7 @@ namespace TaxiAssignment.Server.Services
 			if (request is AuctionScaledRequest scaledRequest)
 				epsilonPrecision = scaledRequest.EpsilonPrecision;
 
-			return RunAuctionIteration(costs, n, request.FindMax, minDimension, hasMoreRows,
-				epsilonPrecision);
+			return RunAuctionIteration(costs, n, request.FindMax, epsilonPrecision);
 		}
 
 		protected abstract double[,] CreateSquareMatrix(AssignmentRequest request);
@@ -51,8 +62,8 @@ namespace TaxiAssignment.Server.Services
 			double? epsilonPrecision);
 		protected virtual void ResetAuctionState() { }
 
-		private int[] RunAuctionIteration(double[,] costs, int n, bool findMax, int minDimension,
-			bool? hasMoreRows, double? epsilonPrecision)
+		private int[] RunAuctionIteration(double[,] costs, int n, bool findMax,
+			double? epsilonPrecision)
 		{
 			bool unassignedExists;
 			do
@@ -75,7 +86,7 @@ namespace TaxiAssignment.Server.Services
 				}
 			} while (unassignedExists);
 
-			return GenerateAgentsTasks(n, minDimension, hasMoreRows);
+			return GenerateAgentsTasks();
 		}
 		private BestTasksResult GetBestTasks(double[,] costs, int n, int agent, bool findMax)
 		{
@@ -111,18 +122,18 @@ namespace TaxiAssignment.Server.Services
 
 			_agentsTasks[agent] = bestTask;
 		}
-		private int[] GenerateAgentsTasks(int n, int minDimension, bool? hasMoreRows)
+		private int[] GenerateAgentsTasks()
 		{
-			if (hasMoreRows.HasValue)
+			if (_hasMoreRows.HasValue)
 			{
-				if (hasMoreRows.Value)
+				if (_hasMoreRows.Value)
 				{
-					for (int i = 0; i < n; i++)
-						if (_agentsTasks[i] >= minDimension)
+					for (int i = 0; i < _agentsTasks.Length; i++)
+						if (_agentsTasks[i] >= _minDimension)
 							_agentsTasks[i] = UNKNOWN_TASK;
 				}
 				else
-					return [.. _agentsTasks.Take(minDimension)];
+					return [.. _agentsTasks.Take(_minDimension)];
 			}
 
 			return _agentsTasks;

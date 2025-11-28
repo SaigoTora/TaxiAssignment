@@ -45,7 +45,8 @@ namespace TaxiAssignment.Server.Services
 				{
 					double max = costs[i, 0];
 					for (int j = 0; j < costs.GetLength(1); j++)
-						max = Math.Max(max, costs[i, j]);
+						if (costs[i, j] > max)
+							max = costs[i, j];
 
 					for (int j = 0; j < costs.GetLength(1); j++)
 						costs[i, j] = max - costs[i, j];
@@ -57,18 +58,20 @@ namespace TaxiAssignment.Server.Services
 
 			for (int i = 0; i < height; i++)
 			{// Row reduction
-				double min = double.MaxValue;// Minimum value in the current row
+				double min = costs[0, 0];// Minimum value in the current row
 				for (int j = 0; j < width; j++)
-					min = Math.Min(min, costs[i, j]);
+					if (costs[i, j] < min)
+						min = costs[i, j];
 
 				for (int j = 0; j < width; j++)
 					costs[i, j] -= min;
 			}
 			for (int i = 0; i < width; i++)
 			{// Column reduction
-				double min = double.MaxValue;// Minimum value in the current column
+				double min = costs[0, 0];// Minimum value in the current column
 				for (int j = 0; j < height; j++)
-					min = Math.Min(min, costs[j, i]);
+					if (costs[j, i] < min)
+						min = costs[j, i];
 
 				for (int j = 0; j < height; j++)
 					costs[j, i] -= min;
@@ -132,33 +135,35 @@ namespace TaxiAssignment.Server.Services
 			return agentsTasks;
 		}
 
-		private static double[,] CreateSquareMatrix(double[,] matrix)
+		private static double[,] CreateSquareMatrix(double[,] costs)
 		{
-			if (matrix.GetLength(0) == matrix.GetLength(1))
-				return matrix;
+			int n = costs.GetLength(0), m = costs.GetLength(1);
+			if (n == m)
+				return costs;
 
-			int maxLength = Math.Max(matrix.GetLength(0), matrix.GetLength(1));
+			int maxLength = Math.Max(n, m);
 			double[,] result = new double[maxLength, maxLength];
-			double max = matrix[0, 0];
+			double maxValue = costs[0, 0];
 
-			for (int i = 0; i < matrix.GetLength(0); i++)// Writing existing elements into an array
-				for (int j = 0; j < matrix.GetLength(1); j++)// and finding the maximum
+			for (int i = 0; i < n; i++)// Writing existing elements into an array
+				for (int j = 0; j < m; j++)// and finding the maximum
 				{
-					result[i, j] = matrix[i, j];
-					max = Math.Max(max, matrix[i, j]);
+					result[i, j] = costs[i, j];
+					if (costs[i, j] > maxValue)
+						maxValue = costs[i, j];
 				}
 
-			if (matrix.GetLength(0) > matrix.GetLength(1))
+			if (n > m)
 			{// If there are more rows than columns
-				for (int i = 0; i < matrix.GetLength(0); i++)
-					for (int j = matrix.GetLength(1); j < matrix.GetLength(0); j++)
-						result[i, j] = max;
+				for (int i = 0; i < n; i++)
+					for (int j = m; j < n; j++)
+						result[i, j] = maxValue;
 			}
 			else
 			{// If there are more columns than rows
-				for (int i = matrix.GetLength(0); i < matrix.GetLength(1); i++)
-					for (int j = 0; j < matrix.GetLength(1); j++)
-						result[i, j] = max;
+				for (int i = n; i < m; i++)
+					for (int j = 0; j < m; j++)
+						result[i, j] = maxValue;
 			}
 			return result;
 		}
@@ -183,8 +188,8 @@ namespace TaxiAssignment.Server.Services
 
 			return HungarianStep.PrimeAndCover;
 		}
-		private static HungarianStep PrimeAndCover(double[,] costs, Mask[,] masks, bool[] rowsCovered,
-			bool[] colsCovered, ref Location pathStart)
+		private static HungarianStep PrimeAndCover(double[,] costs, Mask[,] masks,
+			bool[] rowsCovered, bool[] colsCovered, ref Location pathStart)
 		{
 			while (true)
 			{
@@ -254,14 +259,14 @@ namespace TaxiAssignment.Server.Services
 
 		private static double FindMinimum(double[,] costs, bool[] rowsCovered, bool[] colsCovered)
 		{// Method that finds the minimum value among NOT crossed out elements
-			double minValue = double.MaxValue;
+			double min = double.MaxValue;
 
 			for (int i = 0; i < costs.GetLength(0); i++)
 				for (int j = 0; j < costs.GetLength(1); j++)
-					if (!rowsCovered[i] && !colsCovered[j])
-						minValue = Math.Min(minValue, costs[i, j]);
+					if (!rowsCovered[i] && !colsCovered[j] && costs[i, j] < min)
+						min = costs[i, j];
 
-			return minValue;
+			return min;
 		}
 		private static int FindIndexInRow(Mask[,] masks, int row)
 		{// The method returns the column index if there is a unit in a particular row
