@@ -26,6 +26,10 @@ namespace TaxiAssignment.Server.Services
 		private const int EMPTY_COLUMN_INDEX = -1;
 		private const double EPSILON = 1e-9;
 
+		private Mask[,] _masks = new Mask[0, 0];
+		private bool[] _rowsCovered = [], _colsCovered = [];
+		private int _height, _width;
+
 		public int[] Solve(AssignmentRequest request)
 		{
 			ArgumentNullException.ThrowIfNull(request);
@@ -39,100 +43,20 @@ namespace TaxiAssignment.Server.Services
 			else
 				costs = CreateSquareMatrix(request.Costs);
 
+			_height = costs.GetLength(0);
+			_width = costs.GetLength(1);
+
 			if (request.FindMax)
-			{// If the assignment is resolved to the maximum
-				for (int i = 0; i < costs.GetLength(0); i++)
-				{
-					double max = costs[i, 0];
-					for (int j = 0; j < costs.GetLength(1); j++)
-						if (costs[i, j] > max)
-							max = costs[i, j];
+				InvertCosts(costs);
 
-					for (int j = 0; j < costs.GetLength(1); j++)
-						costs[i, j] = max - costs[i, j];
-				}
-			}
+			ReduceRows(costs);
+			ReduceColumns(costs);
+			InitializeMasks(costs);
 
-			int height = costs.GetLength(0);
-			int width = costs.GetLength(1);
+			RunAlgorithm(costs);
 
-			for (int i = 0; i < height; i++)
-			{// Row reduction
-				double min = costs[0, 0];// Minimum value in the current row
-				for (int j = 0; j < width; j++)
-					if (costs[i, j] < min)
-						min = costs[i, j];
-
-				for (int j = 0; j < width; j++)
-					costs[i, j] -= min;
-			}
-			for (int i = 0; i < width; i++)
-			{// Column reduction
-				double min = costs[0, 0];// Minimum value in the current column
-				for (int j = 0; j < height; j++)
-					if (costs[j, i] < min)
-						min = costs[j, i];
-
-				for (int j = 0; j < height; j++)
-					costs[j, i] -= min;
-			}
-
-			Mask[,] masks = new Mask[height, width];
-			bool[] rowsCovered = new bool[height];
-			bool[] colsCovered = new bool[width];
-
-			// Obtaining a mask, where we denote by the number 1 those elements that
-			// are zero in the original matrix and do not have 0 at the intersection
-			for (int i = 0; i < height; i++)
-				for (int j = 0; j < width; j++)
-					if (Math.Abs(costs[i, j]) < EPSILON && !rowsCovered[i] && !colsCovered[j])
-					{
-						masks[i, j] = Mask.Star;
-						rowsCovered[i] = true;
-						colsCovered[j] = true;
-					}
-
-			ClearCovers(rowsCovered, colsCovered);
-
-			Location[] path = new Location[width * height];
-			Location pathStart = default;
-			HungarianStep step = HungarianStep.MarkStars;
-
-			while (step != HungarianStep.Last)
-			{
-				if (step == HungarianStep.MarkStars)
-					step = MarkInitialStars(masks, colsCovered);
-				if (step == HungarianStep.PrimeAndCover)
-					step = PrimeAndCover(costs, masks, rowsCovered, colsCovered, ref pathStart);
-				if (step == HungarianStep.BuildPath)
-					step = BuildAndConvertPath(masks, rowsCovered, colsCovered, path, pathStart);
-				if (step == HungarianStep.AdjustCosts)
-					step = AdjustCosts(costs, rowsCovered, colsCovered);
-			}
-
-			// Convert the mask matrix to the desired size
-			Mask[,] newMasks = new Mask[n, m];
-			for (int i = 0; i < n; i++)
-				for (int j = 0; j < m; j++)
-					newMasks[i, j] = masks[i, j];
-
-			// The resulting array, where the index is the worker and the value is the task
-			const int UNKNOWN_TASK = -1;
-			int[] agentsTasks = new int[newMasks.GetLength(0)];
-
-			for (int i = 0; i < newMasks.GetLength(0); i++)
-				for (int j = 0; j < newMasks.GetLength(1); j++)
-				{
-					if (newMasks[i, j] == Mask.Star)
-					{
-						agentsTasks[i] = j;
-						break;
-					}
-					else if (j == newMasks.GetLength(1) - 1)
-						agentsTasks[i] = UNKNOWN_TASK;// If the worker was not up to the task
-				}
-
-			return agentsTasks;
+			_masks = CopyMaskMatrix(n, m);
+			return GenerateAgentsTasks();
 		}
 
 		private static double[,] CreateSquareMatrix(double[,] costs)
@@ -145,8 +69,8 @@ namespace TaxiAssignment.Server.Services
 			double[,] result = new double[maxLength, maxLength];
 			double maxValue = costs[0, 0];
 
-			for (int i = 0; i < n; i++)// Writing existing elements into an array
-				for (int j = 0; j < m; j++)// and finding the maximum
+			for (int i = 0; i < n; i++)
+				for (int j = 0; j < m; j++)
 				{
 					result[i, j] = costs[i, j];
 					if (costs[i, j] > maxValue)
@@ -157,43 +81,115 @@ namespace TaxiAssignment.Server.Services
 
 			return result;
 		}
-
-		private static HungarianStep MarkInitialStars(Mask[,] masks, bool[] colsCovered)
+		private void InvertCosts(double[,] costs)
 		{
-			// Mark the data in colsCovered
-			for (int i = 0; i < masks.GetLength(0); i++)
-				for (int j = 0; j < masks.GetLength(1); j++)
-					if (masks[i, j] == Mask.Star)
-						colsCovered[j] = true;
+			for (int i = 0; i < _height; i++)
+			{
+				double max = costs[i, 0];
+				for (int j = 0; j < _width; j++)
+					if (costs[i, j] > max)
+						max = costs[i, j];
 
-			// Find the number of crossed out columns
+				for (int j = 0; j < _width; j++)
+					costs[i, j] = max - costs[i, j];
+			}
+		}
+		private void ReduceRows(double[,] costs)
+		{
+			for (int i = 0; i < _height; i++)
+			{
+				double min = costs[i, 0];// Minimum value in the current row
+				for (int j = 0; j < _width; j++)
+					if (costs[i, j] < min)
+						min = costs[i, j];
+
+				for (int j = 0; j < _width; j++)
+					costs[i, j] -= min;
+			}
+		}
+		private void ReduceColumns(double[,] costs)
+		{
+			for (int i = 0; i < _width; i++)
+			{
+				double min = costs[0, i];// Minimum value in the current column
+				for (int j = 0; j < _height; j++)
+					if (costs[j, i] < min)
+						min = costs[j, i];
+
+				for (int j = 0; j < _height; j++)
+					costs[j, i] -= min;
+			}
+		}
+		private void InitializeMasks(double[,] costs)
+		{
+			_masks = new Mask[_height, _width];
+			_rowsCovered = new bool[_height];
+			_colsCovered = new bool[_width];
+
+			for (int i = 0; i < _height; i++)
+				for (int j = 0; j < _width; j++)
+					if (Math.Abs(costs[i, j]) < EPSILON && !_rowsCovered[i] && !_colsCovered[j])
+					{
+						_masks[i, j] = Mask.Star;
+						_rowsCovered[i] = true;
+						_colsCovered[j] = true;
+					}
+
+			ClearCovers();
+		}
+
+		private void RunAlgorithm(double[,] costs)
+		{
+			Location[] path = new Location[_height * _width];
+			Location pathStart = default;
+			HungarianStep step = HungarianStep.MarkStars;
+
+			while (step != HungarianStep.Last)
+			{
+				if (step == HungarianStep.MarkStars)
+					step = MarkInitialStars();
+				if (step == HungarianStep.PrimeAndCover)
+					step = PrimeAndCover(costs, ref pathStart);
+				if (step == HungarianStep.BuildPath)
+					step = BuildAndConvertPath(path, pathStart);
+				if (step == HungarianStep.AdjustCosts)
+					step = AdjustCosts(costs);
+			}
+		}
+
+		private HungarianStep MarkInitialStars()
+		{
+			for (int i = 0; i < _masks.GetLength(0); i++)
+				for (int j = 0; j < _masks.GetLength(1); j++)
+					if (_masks[i, j] == Mask.Star)
+						_colsCovered[j] = true;
+
 			int colsCoveredCount = 0;
-			for (int j = 0; j < colsCovered.Length; j++)
-				if (colsCovered[j])
+			for (int j = 0; j < _colsCovered.Length; j++)
+				if (_colsCovered[j])
 					colsCoveredCount++;
 
 			// If all columns are crossed out, this is the last step in the cycle.
-			if (colsCoveredCount == colsCovered.Length)
+			if (colsCoveredCount == _colsCovered.Length)
 				return HungarianStep.Last;
 
 			return HungarianStep.PrimeAndCover;
 		}
-		private static HungarianStep PrimeAndCover(double[,] costs, Mask[,] masks,
-			bool[] rowsCovered, bool[] colsCovered, ref Location pathStart)
+		private HungarianStep PrimeAndCover(double[,] costs, ref Location pathStart)
 		{
 			while (true)
 			{
-				Location location = FindZero(costs, rowsCovered, colsCovered);
+				Location location = FindZero(costs);
 				if (location.Row == EMPTY_ROW_INDEX)// If no uncrossed zero was found
 					return HungarianStep.AdjustCosts;
 
-				masks[location.Row, location.Column] = Mask.Prime;
+				_masks[location.Row, location.Column] = Mask.Prime;
 
-				int indexCol = FindIndexInRow(masks, location.Row);
+				int indexCol = FindColumnInRow(location.Row, Mask.Star);
 				if (indexCol != EMPTY_COLUMN_INDEX)
-				{// If the index was found
-					rowsCovered[location.Row] = true;
-					colsCovered[indexCol] = false;
+				{
+					_rowsCovered[location.Row] = true;
+					_colsCovered[indexCol] = false;
 				}
 				else
 				{
@@ -202,134 +198,143 @@ namespace TaxiAssignment.Server.Services
 				}
 			}
 		}
-		private static HungarianStep BuildAndConvertPath(Mask[,] masks, bool[] rowsCovered,
-			bool[] colsCovered, Location[] path, Location pathStart)
+		private HungarianStep BuildAndConvertPath(Location[] path, Location pathStart)
 		{
 			int pathIndex = 0;
 			path[0] = pathStart;
 
 			while (true)
 			{
-				int row = FindIndexInColumn(masks, path[pathIndex].Column);
+				int row = FindRowInColumn(path[pathIndex].Column, Mask.Star);
 				if (row == EMPTY_ROW_INDEX)
 					break;
 
 				pathIndex++;
 				path[pathIndex] = new Location(row, path[pathIndex - 1].Column);
 
-				int col = FindPrimeInRow(masks, path[pathIndex].Row);
+				int col = FindColumnInRow(path[pathIndex].Row, Mask.Prime);
 
 				pathIndex++;
 				path[pathIndex] = new Location(path[pathIndex - 1].Row, col);
 			}
 
-			ConvertPath(masks, path, pathIndex + 1);
-			ClearCovers(rowsCovered, colsCovered);
-			ClearPrimes(masks);
+			ConvertPath(path, pathIndex + 1);
+			ClearCovers();
+			ClearPrimes();
 
 			return HungarianStep.MarkStars;
 		}
-		private static HungarianStep AdjustCosts(double[,] costs, bool[] rowsCovered,
-			bool[] colsCovered)
+		private HungarianStep AdjustCosts(double[,] costs)
 		{
-			double minValue = FindMinimum(costs, rowsCovered, colsCovered);
+			double minValue = FindMinimum(costs);
 
 			// Add or subtract the minimum depending on the strikethrough
 			for (int i = 0; i < costs.GetLength(0); i++)
 				for (int j = 0; j < costs.GetLength(1); j++)
 				{
-					if (rowsCovered[i])
+					if (_rowsCovered[i])
 						costs[i, j] += minValue;
-					if (!colsCovered[j])
+					if (!_colsCovered[j])
 						costs[i, j] -= minValue;
 				}
 
 			return HungarianStep.PrimeAndCover;
 		}
 
-		private static double FindMinimum(double[,] costs, bool[] rowsCovered, bool[] colsCovered)
+		private double FindMinimum(double[,] costs)
 		{// Method that finds the minimum value among NOT crossed out elements
 			double min = double.MaxValue;
 
 			for (int i = 0; i < costs.GetLength(0); i++)
 				for (int j = 0; j < costs.GetLength(1); j++)
-					if (!rowsCovered[i] && !colsCovered[j] && costs[i, j] < min)
+					if (!_rowsCovered[i] && !_colsCovered[j] && costs[i, j] < min)
 						min = costs[i, j];
 
 			return min;
 		}
-		private static int FindIndexInRow(Mask[,] masks, int row)
-		{// The method returns the column index if there is a unit in a particular row
-			for (int j = 0; j < masks.GetLength(1); j++)
-				if (masks[row, j] == Mask.Star)
+		private int FindColumnInRow(int rowIndex, Mask maskToFind)
+		{
+			for (int j = 0; j < _masks.GetLength(1); j++)
+				if (_masks[rowIndex, j] == maskToFind)
 					return j;
 
-			return EMPTY_COLUMN_INDEX;// If not found
+			return EMPTY_COLUMN_INDEX;
 		}
-		private static int FindIndexInColumn(Mask[,] masks, int col)
-		{// The method returns the row index if there is a unit in a certain column
-			for (int i = 0; i < masks.GetLength(0); i++)
-				if (masks[i, col] == Mask.Star)
+		private int FindRowInColumn(int columnIndex, Mask maskToFind)
+		{
+			for (int i = 0; i < _masks.GetLength(0); i++)
+				if (_masks[i, columnIndex] == maskToFind)
 					return i;
 
-			return EMPTY_ROW_INDEX;// If not found
+			return EMPTY_ROW_INDEX;
 		}
-		private static int FindPrimeInRow(Mask[,] masks, int row)
-		{// The method returns the column index if there is a two in a given row
-			for (int j = 0; j < masks.GetLength(1); j++)
-				if (masks[row, j] == Mask.Prime)
-					return j;
 
-			return EMPTY_COLUMN_INDEX;// If not found
-		}
-		private static Location FindZero(double[,] costs, bool[] rowsCovered, bool[] colsCovered)
-		{// The method returns the position of the first uncrossed zero
+		private Location FindZero(double[,] costs)
+		{// Method returns the position of the first uncrossed zero
 			for (int i = 0; i < costs.GetLength(0); i++)
 				for (int j = 0; j < costs.GetLength(1); j++)
-					if (Math.Abs(costs[i, j]) < EPSILON && !rowsCovered[i] && !colsCovered[j])
+					if (Math.Abs(costs[i, j]) < EPSILON && !_rowsCovered[i] && !_colsCovered[j])
 						return new Location(i, j);
 
-			// If zero was not found
 			return new Location(EMPTY_ROW_INDEX, EMPTY_COLUMN_INDEX);
 		}
 
-		private static void ConvertPath(Mask[,] masks, Location[] path, int pathLength)
-		{// A method that modifies the data in the masks matrix
+		private void ConvertPath(Location[] path, int pathLength)
+		{
 			int row, column;
+
 			for (int i = 0; i < pathLength; i++)
 			{
 				row = path[i].Row;
 				column = path[i].Column;
 
-				if (masks[row, column] == Mask.Star)
-					masks[row, column] = Mask.Empty;
+				if (_masks[row, column] == Mask.Star)
+					_masks[row, column] = Mask.Empty;
 
-				else if (masks[row, column] == Mask.Prime)
-					masks[row, column] = Mask.Star;
+				else if (_masks[row, column] == Mask.Prime)
+					_masks[row, column] = Mask.Star;
 			}
 		}
-		private static void ClearPrimes(Mask[,] masks)
-		{// Method that writes 0 for elements with value 2
-			for (var i = 0; i < masks.GetLength(0); i++)
-				for (var j = 0; j < masks.GetLength(1); j++)
-					if (masks[i, j] == Mask.Prime)
-						masks[i, j] = Mask.Empty;
+		private void ClearPrimes()
+		{
+			for (var i = 0; i < _masks.GetLength(0); i++)
+				for (var j = 0; j < _masks.GetLength(1); j++)
+					if (_masks[i, j] == Mask.Prime)
+						_masks[i, j] = Mask.Empty;
 		}
-		private static void ClearCovers(bool[] rowsCovered, bool[] colsCovered)
-		{// Method that writes false for boolean arrays
-			if (rowsCovered.Length == colsCovered.Length)
-				for (int i = 0; i < rowsCovered.Length; i++)
-				{// If they are the same length
-					rowsCovered[i] = false;
-					colsCovered[i] = false;
+		private void ClearCovers()
+		{
+			Array.Clear(_rowsCovered);
+			Array.Clear(_colsCovered);
+		}
+
+		private Mask[,] CopyMaskMatrix(int height, int width)
+		{
+			Mask[,] newMasks = new Mask[height, width];
+			for (int i = 0; i < height; i++)
+				for (int j = 0; j < width; j++)
+					newMasks[i, j] = _masks[i, j];
+
+			return newMasks;
+		}
+		private int[] GenerateAgentsTasks()
+		{// Method returns resulting array, where the index is the worker and the value is the task
+			const int UNKNOWN_TASK = -1;
+			int[] agentsTasks = new int[_masks.GetLength(0)];
+
+			for (int i = 0; i < _masks.GetLength(0); i++)
+				for (int j = 0; j < _masks.GetLength(1); j++)
+				{
+					if (_masks[i, j] == Mask.Star)
+					{
+						agentsTasks[i] = j;
+						break;
+					}
+					else if (j == _masks.GetLength(1) - 1)
+						agentsTasks[i] = UNKNOWN_TASK;
 				}
-			else
-			{// If their lengths are different
-				for (int i = 0; i < rowsCovered.Length; i++)
-					rowsCovered[i] = false;
-				for (int i = 0; i < colsCovered.Length; i++)
-					colsCovered[i] = false;
-			}
+
+			return agentsTasks;
 		}
 	}
 }

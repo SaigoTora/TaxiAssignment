@@ -24,6 +24,20 @@ namespace TaxiAssignment.Server.Services
 
 			ResetAuctionState();
 
+			double[,] costs = PrepareCostMatrix(request);
+			int n = costs.GetLength(0);
+			InitializeAuctionArrays(n);
+
+			double? epsilonPrecision = null;
+			if (request is AuctionScaledRequest scaledRequest)
+				epsilonPrecision = scaledRequest.EpsilonPrecision;
+
+			RunAlgorithm(costs, request.FindMax, epsilonPrecision);
+
+			return GenerateAgentsTasks();
+		}
+		private double[,] PrepareCostMatrix(AssignmentRequest request)
+		{
 			double[,] costs = request.Costs;
 
 			int n = costs.GetLength(0), m = costs.GetLength(1);
@@ -43,18 +57,16 @@ namespace TaxiAssignment.Server.Services
 
 			if (n != m)
 				costs = CreateSquareMatrix(request);
-			n = costs.GetLength(0);
 
+			return costs;
+		}
+		private void InitializeAuctionArrays(int n)
+		{
 			_agentsTasks = new int[n];
 			_prices = new double[n];
+
 			for (int i = 0; i < n; i++)
 				_agentsTasks[i] = UNKNOWN_TASK;
-
-			double? epsilonPrecision = null;
-			if (request is AuctionScaledRequest scaledRequest)
-				epsilonPrecision = scaledRequest.EpsilonPrecision;
-
-			return RunAuctionIteration(costs, n, request.FindMax, epsilonPrecision);
 		}
 
 		protected abstract double[,] CreateSquareMatrix(AssignmentRequest request);
@@ -62,10 +74,11 @@ namespace TaxiAssignment.Server.Services
 			double? epsilonPrecision);
 		protected virtual void ResetAuctionState() { }
 
-		private int[] RunAuctionIteration(double[,] costs, int n, bool findMax,
-			double? epsilonPrecision)
+		private void RunAlgorithm(double[,] costs, bool findMax, double? epsilonPrecision)
 		{
 			bool unassignedExists;
+			int n = costs.GetLength(0);
+
 			do
 			{
 				unassignedExists = false;
@@ -81,12 +94,10 @@ namespace TaxiAssignment.Server.Services
 					if (bestTasks.BestTask != UNKNOWN_BEST_TASK)
 					{
 						double bid = bestTasks.BestValue - bestTasks.SecondBestValue + epsilon;
-						SetPricesAndAgentsTasks(n, agent, bestTasks.BestTask, bid);
+						UpdatePricesAndAssignments(n, agent, bestTasks.BestTask, bid);
 					}
 				}
 			} while (unassignedExists);
-
-			return GenerateAgentsTasks();
 		}
 		private BestTasksResult GetBestTasks(double[,] costs, int n, int agent, bool findMax)
 		{
@@ -109,7 +120,7 @@ namespace TaxiAssignment.Server.Services
 
 			return new(bestTask, bestValue, secondBestValue);
 		}
-		private void SetPricesAndAgentsTasks(int n, int agent, int bestTask, double bid)
+		private void UpdatePricesAndAssignments(int n, int agent, int bestTask, double bid)
 		{
 			_prices[bestTask] += bid;
 
