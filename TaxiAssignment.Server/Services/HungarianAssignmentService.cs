@@ -15,12 +15,13 @@ namespace TaxiAssignment.Server.Services
 			ArgumentNullException.ThrowIfNull(request);
 			ArgumentNullException.ThrowIfNull(request.Costs);
 
-			// Clone the matrix to avoid modifying the original input
-			double[,] costs = (double[,])request.Costs.Clone();
+			double[,] costs;
+			int n = request.Costs.GetLength(0), m = request.Costs.GetLength(1);
 
-			int n = costs.GetLength(0), m = costs.GetLength(1);// Initial matrix dimensions
-			if (costs.GetLength(0) != costs.GetLength(1))
-				costs = CreateSquareMatrix(costs);
+			if (n == m)// Clone the matrix to avoid modifying the original input
+				costs = (double[,])request.Costs.Clone();
+			else
+				costs = CreateSquareMatrix(request.Costs);
 
 			if (request.FindMax)
 			{// If the assignment is resolved to the maximum

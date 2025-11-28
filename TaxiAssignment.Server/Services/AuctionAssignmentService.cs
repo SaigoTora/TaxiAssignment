@@ -19,8 +19,7 @@ namespace TaxiAssignment.Server.Services
 
 			ResetAuctionState();
 
-			// Clone the matrix to avoid modifying the original input
-			double[,] costs = (double[,])request.Costs.Clone();
+			double[,] costs = request.Costs;
 
 			int n = costs.GetLength(0), m = costs.GetLength(1);
 			int minDimension = Math.Min(n, m);
