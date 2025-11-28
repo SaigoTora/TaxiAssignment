@@ -55,6 +55,7 @@ export default function MapMarkers({
 	useEffect(() => {
 		if (!map) return
 
+		lastClickedRef.current = null
 		// Clearing the previous state
 		clearMapElements()
 
