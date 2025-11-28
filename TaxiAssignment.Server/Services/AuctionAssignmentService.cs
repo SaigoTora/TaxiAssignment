@@ -8,6 +8,8 @@ namespace TaxiAssignment.Server.Services
 		private readonly record struct BestTasksResult(int BestTask, double BestValue,
 			double SecondBestValue);
 
+		private const int UNKNOWN_TASK = -1;
+		private const int UNKNOWN_BEST_TASK = -1;
 
 		private int[] _agentsTasks = [];
 		private double[] _prices = [];
@@ -34,7 +36,7 @@ namespace TaxiAssignment.Server.Services
 			_agentsTasks = new int[n];
 			_prices = new double[n];
 			for (int i = 0; i < n; i++)
-				_agentsTasks[i] = -1;
+				_agentsTasks[i] = UNKNOWN_TASK;
 
 			double? epsilonPrecision = null;
 			if (request is AuctionScaledRequest scaledRequest)
@@ -59,13 +61,13 @@ namespace TaxiAssignment.Server.Services
 				double epsilon = CalculateEpsilon(costs, n, epsilonPrecision);
 				for (int agent = 0; agent < n; agent++)
 				{
-					if (_agentsTasks[agent] != -1)
+					if (_agentsTasks[agent] != UNKNOWN_TASK)
 						continue;
 
 					unassignedExists = true;
 					BestTasksResult bestTasks = GetBestTasks(costs, n, agent, findMax);
 
-					if (bestTasks.BestTask != -1)
+					if (bestTasks.BestTask != UNKNOWN_BEST_TASK)
 					{
 						double bid = bestTasks.BestValue - bestTasks.SecondBestValue + epsilon;
 						SetPricesAndAgentsTasks(n, agent, bestTasks.BestTask, bid);
@@ -77,7 +79,7 @@ namespace TaxiAssignment.Server.Services
 		}
 		private BestTasksResult GetBestTasks(double[,] costs, int n, int agent, bool findMax)
 		{
-			int bestTask = -1;
+			int bestTask = UNKNOWN_BEST_TASK;
 			double bestValue = double.NegativeInfinity, secondBestValue = double.NegativeInfinity;
 
 			for (int task = 0; task < n; task++)
@@ -103,7 +105,7 @@ namespace TaxiAssignment.Server.Services
 			for (int otherAgent = 0; otherAgent < n; otherAgent++)
 				if (_agentsTasks[otherAgent] == bestTask)
 				{
-					_agentsTasks[otherAgent] = -1;
+					_agentsTasks[otherAgent] = UNKNOWN_TASK;
 					break;
 				}
 
@@ -117,7 +119,7 @@ namespace TaxiAssignment.Server.Services
 				{
 					for (int i = 0; i < n; i++)
 						if (_agentsTasks[i] >= minDimension)
-							_agentsTasks[i] = -1;
+							_agentsTasks[i] = UNKNOWN_TASK;
 				}
 				else
 					return [.. _agentsTasks.Take(minDimension)];

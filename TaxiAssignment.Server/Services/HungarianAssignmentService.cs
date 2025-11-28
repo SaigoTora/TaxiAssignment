@@ -5,9 +5,25 @@ namespace TaxiAssignment.Server.Services
 {
 	public class HungarianAssignmentService : IAssignmentService
 	{
+		private enum Mask : byte
+		{
+			Empty = 0,
+			Star = 1,
+			Prime = 2
+		}
+		private enum HungarianStep
+		{
+			MarkStars = 1,
+			PrimeAndCover = 2,
+			BuildPath = 3,
+			AdjustCosts = 4,
+			Last = -1
+		}
 		private readonly record struct Location(int Row, int Column);
 
 
+		private const int EMPTY_ROW_INDEX = -1;
+		private const int EMPTY_COLUMN_INDEX = -1;
 		private const double EPSILON = 1e-9;
 
 		public int[] Solve(AssignmentRequest request)
@@ -58,7 +74,7 @@ namespace TaxiAssignment.Server.Services
 					costs[j, i] -= min;
 			}
 
-			byte[,] masks = new byte[height, width];
+			Mask[,] masks = new Mask[height, width];
 			bool[] rowsCovered = new bool[height];
 			bool[] colsCovered = new bool[width];
 
@@ -68,7 +84,7 @@ namespace TaxiAssignment.Server.Services
 				for (int j = 0; j < width; j++)
 					if (Math.Abs(costs[i, j]) < EPSILON && !rowsCovered[i] && !colsCovered[j])
 					{
-						masks[i, j] = 1;
+						masks[i, j] = Mask.Star;
 						rowsCovered[i] = true;
 						colsCovered[j] = true;
 					}
@@ -77,39 +93,40 @@ namespace TaxiAssignment.Server.Services
 
 			Location[] path = new Location[width * height];
 			Location pathStart = default;
-			int step = 1;
+			HungarianStep step = HungarianStep.MarkStars;
 
-			while (step != -1)
+			while (step != HungarianStep.Last)
 			{
-				if (step == 1)
-					step = RunStep1(masks, colsCovered);
-				if (step == 2)
-					step = RunStep2(costs, masks, rowsCovered, colsCovered, ref pathStart);
-				if (step == 3)
-					step = RunStep3(masks, rowsCovered, colsCovered, path, pathStart);
-				if (step == 4)
-					step = RunStep4(costs, rowsCovered, colsCovered);
+				if (step == HungarianStep.MarkStars)
+					step = MarkInitialStars(masks, colsCovered);
+				if (step == HungarianStep.PrimeAndCover)
+					step = PrimeAndCover(costs, masks, rowsCovered, colsCovered, ref pathStart);
+				if (step == HungarianStep.BuildPath)
+					step = BuildAndConvertPath(masks, rowsCovered, colsCovered, path, pathStart);
+				if (step == HungarianStep.AdjustCosts)
+					step = AdjustCosts(costs, rowsCovered, colsCovered);
 			}
 
 			// Convert the mask matrix to the desired size
-			byte[,] newMasks = new byte[n, m];
+			Mask[,] newMasks = new Mask[n, m];
 			for (int i = 0; i < n; i++)
 				for (int j = 0; j < m; j++)
 					newMasks[i, j] = masks[i, j];
 
 			// The resulting array, where the index is the worker and the value is the task
+			const int UNKNOWN_TASK = -1;
 			int[] agentsTasks = new int[newMasks.GetLength(0)];
 
 			for (int i = 0; i < newMasks.GetLength(0); i++)
 				for (int j = 0; j < newMasks.GetLength(1); j++)
 				{
-					if (newMasks[i, j] == 1)
+					if (newMasks[i, j] == Mask.Star)
 					{
 						agentsTasks[i] = j;
 						break;
 					}
 					else if (j == newMasks.GetLength(1) - 1)
-						agentsTasks[i] = -1;// If the worker was not up to the task
+						agentsTasks[i] = UNKNOWN_TASK;// If the worker was not up to the task
 				}
 
 			return agentsTasks;
@@ -145,15 +162,16 @@ namespace TaxiAssignment.Server.Services
 			}
 			return result;
 		}
-		private static int RunStep1(byte[,] masks, bool[] colsCovered)
-		{// Method that fills the colsCovered array and returns the next step number (2 or -1)
+
+		private static HungarianStep MarkInitialStars(Mask[,] masks, bool[] colsCovered)
+		{
 			ArgumentNullException.ThrowIfNull(masks);
 			ArgumentNullException.ThrowIfNull(colsCovered);
 
 			// Mark the data in colsCovered
 			for (int i = 0; i < masks.GetLength(0); i++)
 				for (int j = 0; j < masks.GetLength(1); j++)
-					if (masks[i, j] == 1)
+					if (masks[i, j] == Mask.Star)
 						colsCovered[j] = true;
 
 			// Find the number of crossed out columns
@@ -164,14 +182,13 @@ namespace TaxiAssignment.Server.Services
 
 			// If all columns are crossed out, this is the last step in the cycle.
 			if (colsCoveredCount == colsCovered.Length)
-				return -1;
+				return HungarianStep.Last;
 
-			return 2;
+			return HungarianStep.PrimeAndCover;
 		}
-		private static int RunStep2(double[,] costs, byte[,] masks, bool[] rowsCovered,
+		private static HungarianStep PrimeAndCover(double[,] costs, Mask[,] masks, bool[] rowsCovered,
 			bool[] colsCovered, ref Location pathStart)
-		{// Method that modifies the colsCovered and rowsCovered arrays
-		 // and also returns the next step number (4 or 3)
+		{
 			ArgumentNullException.ThrowIfNull(costs);
 			ArgumentNullException.ThrowIfNull(masks);
 			ArgumentNullException.ThrowIfNull(rowsCovered);
@@ -180,13 +197,13 @@ namespace TaxiAssignment.Server.Services
 			while (true)
 			{
 				Location location = FindZero(costs, rowsCovered, colsCovered);
-				if (location.Row == -1)// If no uncrossed zero was found
-					return 4;
+				if (location.Row == EMPTY_ROW_INDEX)// If no uncrossed zero was found
+					return HungarianStep.AdjustCosts;
 
-				masks[location.Row, location.Column] = 2;
+				masks[location.Row, location.Column] = Mask.Prime;
 
 				int indexCol = FindIndexInRow(masks, location.Row);
-				if (indexCol != -1)
+				if (indexCol != EMPTY_COLUMN_INDEX)
 				{// If the index was found
 					rowsCovered[location.Row] = true;
 					colsCovered[indexCol] = false;
@@ -194,13 +211,13 @@ namespace TaxiAssignment.Server.Services
 				else
 				{
 					pathStart = location;
-					return 3;
+					return HungarianStep.BuildPath;
 				}
 			}
 		}
-		private static int RunStep3(byte[,] masks, bool[] rowsCovered,
+		private static HungarianStep BuildAndConvertPath(Mask[,] masks, bool[] rowsCovered,
 			bool[] colsCovered, Location[] path, Location pathStart)
-		{// Method that modifies the path array and also returns the next step number(1)
+		{
 			ArgumentNullException.ThrowIfNull(masks);
 			ArgumentNullException.ThrowIfNull(rowsCovered);
 			ArgumentNullException.ThrowIfNull(colsCovered);
@@ -211,7 +228,7 @@ namespace TaxiAssignment.Server.Services
 			while (true)
 			{
 				int row = FindIndexInColumn(masks, path[pathIndex].Column);
-				if (row == -1)
+				if (row == EMPTY_ROW_INDEX)
 					break;
 
 				pathIndex++;
@@ -227,10 +244,11 @@ namespace TaxiAssignment.Server.Services
 			ClearCovers(rowsCovered, colsCovered);
 			ClearPrimes(masks);
 
-			return 1;
+			return HungarianStep.MarkStars;
 		}
-		private static int RunStep4(double[,] costs, bool[] rowsCovered, bool[] colsCovered)
-		{// Method that changes the data in costs and returns the next step number(2)
+		private static HungarianStep AdjustCosts(double[,] costs, bool[] rowsCovered,
+			bool[] colsCovered)
+		{
 			ArgumentNullException.ThrowIfNull(costs);
 			ArgumentNullException.ThrowIfNull(rowsCovered);
 			ArgumentNullException.ThrowIfNull(colsCovered);
@@ -247,7 +265,7 @@ namespace TaxiAssignment.Server.Services
 						costs[i, j] -= minValue;
 				}
 
-			return 2;
+			return HungarianStep.PrimeAndCover;
 		}
 
 		private static double FindMinimum(double[,] costs, bool[] rowsCovered, bool[] colsCovered)
@@ -265,35 +283,35 @@ namespace TaxiAssignment.Server.Services
 
 			return minValue;
 		}
-		private static int FindIndexInRow(byte[,] masks, int row)
+		private static int FindIndexInRow(Mask[,] masks, int row)
 		{// The method returns the column index if there is a unit in a particular row
 			ArgumentNullException.ThrowIfNull(masks);
 
 			for (int j = 0; j < masks.GetLength(1); j++)
-				if (masks[row, j] == 1)
+				if (masks[row, j] == Mask.Star)
 					return j;
 
-			return -1;// If not found
+			return EMPTY_COLUMN_INDEX;// If not found
 		}
-		private static int FindIndexInColumn(byte[,] masks, int col)
+		private static int FindIndexInColumn(Mask[,] masks, int col)
 		{// The method returns the row index if there is a unit in a certain column
 			ArgumentNullException.ThrowIfNull(masks);
 
 			for (int i = 0; i < masks.GetLength(0); i++)
-				if (masks[i, col] == 1)
+				if (masks[i, col] == Mask.Star)
 					return i;
 
-			return -1;// If not found
+			return EMPTY_ROW_INDEX;// If not found
 		}
-		private static int FindPrimeInRow(byte[,] masks, int row)
+		private static int FindPrimeInRow(Mask[,] masks, int row)
 		{// The method returns the column index if there is a two in a given row
 			ArgumentNullException.ThrowIfNull(masks);
 
 			for (int j = 0; j < masks.GetLength(1); j++)
-				if (masks[row, j] == 2)
+				if (masks[row, j] == Mask.Prime)
 					return j;
 
-			return -1;// If not found
+			return EMPTY_COLUMN_INDEX;// If not found
 		}
 		private static Location FindZero(double[,] costs, bool[] rowsCovered, bool[] colsCovered)
 		{// The method returns the position of the first uncrossed zero
@@ -307,9 +325,10 @@ namespace TaxiAssignment.Server.Services
 						return new Location(i, j);
 
 			// If zero was not found
-			return new Location(-1, -1);
+			return new Location(EMPTY_ROW_INDEX, EMPTY_COLUMN_INDEX);
 		}
-		private static void ConvertPath(byte[,] masks, Location[] path, int pathLength)
+
+		private static void ConvertPath(Mask[,] masks, Location[] path, int pathLength)
 		{// A method that modifies the data in the masks matrix
 			ArgumentNullException.ThrowIfNull(masks);
 			ArgumentNullException.ThrowIfNull(path);
@@ -320,21 +339,21 @@ namespace TaxiAssignment.Server.Services
 				row = path[i].Row;
 				column = path[i].Column;
 
-				if (masks[row, column] == 1)
-					masks[row, column] = 0;
+				if (masks[row, column] == Mask.Star)
+					masks[row, column] = Mask.Empty;
 
-				else if (masks[row, column] == 2)
-					masks[row, column] = 1;
+				else if (masks[row, column] == Mask.Prime)
+					masks[row, column] = Mask.Star;
 			}
 		}
-		private static void ClearPrimes(byte[,] masks)
+		private static void ClearPrimes(Mask[,] masks)
 		{// Method that writes 0 for elements with value 2
 			ArgumentNullException.ThrowIfNull(masks);
 
 			for (var i = 0; i < masks.GetLength(0); i++)
 				for (var j = 0; j < masks.GetLength(1); j++)
-					if (masks[i, j] == 2)
-						masks[i, j] = 0;
+					if (masks[i, j] == Mask.Prime)
+						masks[i, j] = Mask.Empty;
 		}
 		private static void ClearCovers(bool[] rowsCovered, bool[] colsCovered)
 		{// Method that writes false for boolean arrays
