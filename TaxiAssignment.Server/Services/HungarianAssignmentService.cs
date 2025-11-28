@@ -153,18 +153,8 @@ namespace TaxiAssignment.Server.Services
 						maxValue = costs[i, j];
 				}
 
-			if (n > m)
-			{// If there are more rows than columns
-				for (int i = 0; i < n; i++)
-					for (int j = m; j < n; j++)
-						result[i, j] = maxValue;
-			}
-			else
-			{// If there are more columns than rows
-				for (int i = n; i < m; i++)
-					for (int j = 0; j < m; j++)
-						result[i, j] = maxValue;
-			}
+			IAssignmentService.FillExtraCells(result, maxValue);
+
 			return result;
 		}
 
