@@ -165,9 +165,6 @@ namespace TaxiAssignment.Server.Services
 
 		private static HungarianStep MarkInitialStars(Mask[,] masks, bool[] colsCovered)
 		{
-			ArgumentNullException.ThrowIfNull(masks);
-			ArgumentNullException.ThrowIfNull(colsCovered);
-
 			// Mark the data in colsCovered
 			for (int i = 0; i < masks.GetLength(0); i++)
 				for (int j = 0; j < masks.GetLength(1); j++)
@@ -189,11 +186,6 @@ namespace TaxiAssignment.Server.Services
 		private static HungarianStep PrimeAndCover(double[,] costs, Mask[,] masks, bool[] rowsCovered,
 			bool[] colsCovered, ref Location pathStart)
 		{
-			ArgumentNullException.ThrowIfNull(costs);
-			ArgumentNullException.ThrowIfNull(masks);
-			ArgumentNullException.ThrowIfNull(rowsCovered);
-			ArgumentNullException.ThrowIfNull(colsCovered);
-
 			while (true)
 			{
 				Location location = FindZero(costs, rowsCovered, colsCovered);
@@ -218,10 +210,6 @@ namespace TaxiAssignment.Server.Services
 		private static HungarianStep BuildAndConvertPath(Mask[,] masks, bool[] rowsCovered,
 			bool[] colsCovered, Location[] path, Location pathStart)
 		{
-			ArgumentNullException.ThrowIfNull(masks);
-			ArgumentNullException.ThrowIfNull(rowsCovered);
-			ArgumentNullException.ThrowIfNull(colsCovered);
-
 			int pathIndex = 0;
 			path[0] = pathStart;
 
@@ -249,10 +237,6 @@ namespace TaxiAssignment.Server.Services
 		private static HungarianStep AdjustCosts(double[,] costs, bool[] rowsCovered,
 			bool[] colsCovered)
 		{
-			ArgumentNullException.ThrowIfNull(costs);
-			ArgumentNullException.ThrowIfNull(rowsCovered);
-			ArgumentNullException.ThrowIfNull(colsCovered);
-
 			double minValue = FindMinimum(costs, rowsCovered, colsCovered);
 
 			// Add or subtract the minimum depending on the strikethrough
@@ -270,10 +254,6 @@ namespace TaxiAssignment.Server.Services
 
 		private static double FindMinimum(double[,] costs, bool[] rowsCovered, bool[] colsCovered)
 		{// Method that finds the minimum value among NOT crossed out elements
-			ArgumentNullException.ThrowIfNull(costs);
-			ArgumentNullException.ThrowIfNull(rowsCovered);
-			ArgumentNullException.ThrowIfNull(colsCovered);
-
 			double minValue = double.MaxValue;
 
 			for (int i = 0; i < costs.GetLength(0); i++)
@@ -285,8 +265,6 @@ namespace TaxiAssignment.Server.Services
 		}
 		private static int FindIndexInRow(Mask[,] masks, int row)
 		{// The method returns the column index if there is a unit in a particular row
-			ArgumentNullException.ThrowIfNull(masks);
-
 			for (int j = 0; j < masks.GetLength(1); j++)
 				if (masks[row, j] == Mask.Star)
 					return j;
@@ -295,8 +273,6 @@ namespace TaxiAssignment.Server.Services
 		}
 		private static int FindIndexInColumn(Mask[,] masks, int col)
 		{// The method returns the row index if there is a unit in a certain column
-			ArgumentNullException.ThrowIfNull(masks);
-
 			for (int i = 0; i < masks.GetLength(0); i++)
 				if (masks[i, col] == Mask.Star)
 					return i;
@@ -305,8 +281,6 @@ namespace TaxiAssignment.Server.Services
 		}
 		private static int FindPrimeInRow(Mask[,] masks, int row)
 		{// The method returns the column index if there is a two in a given row
-			ArgumentNullException.ThrowIfNull(masks);
-
 			for (int j = 0; j < masks.GetLength(1); j++)
 				if (masks[row, j] == Mask.Prime)
 					return j;
@@ -315,10 +289,6 @@ namespace TaxiAssignment.Server.Services
 		}
 		private static Location FindZero(double[,] costs, bool[] rowsCovered, bool[] colsCovered)
 		{// The method returns the position of the first uncrossed zero
-			ArgumentNullException.ThrowIfNull(costs);
-			ArgumentNullException.ThrowIfNull(rowsCovered);
-			ArgumentNullException.ThrowIfNull(colsCovered);
-
 			for (int i = 0; i < costs.GetLength(0); i++)
 				for (int j = 0; j < costs.GetLength(1); j++)
 					if (Math.Abs(costs[i, j]) < EPSILON && !rowsCovered[i] && !colsCovered[j])
@@ -330,9 +300,6 @@ namespace TaxiAssignment.Server.Services
 
 		private static void ConvertPath(Mask[,] masks, Location[] path, int pathLength)
 		{// A method that modifies the data in the masks matrix
-			ArgumentNullException.ThrowIfNull(masks);
-			ArgumentNullException.ThrowIfNull(path);
-
 			int row, column;
 			for (int i = 0; i < pathLength; i++)
 			{
@@ -348,8 +315,6 @@ namespace TaxiAssignment.Server.Services
 		}
 		private static void ClearPrimes(Mask[,] masks)
 		{// Method that writes 0 for elements with value 2
-			ArgumentNullException.ThrowIfNull(masks);
-
 			for (var i = 0; i < masks.GetLength(0); i++)
 				for (var j = 0; j < masks.GetLength(1); j++)
 					if (masks[i, j] == Mask.Prime)
@@ -357,9 +322,6 @@ namespace TaxiAssignment.Server.Services
 		}
 		private static void ClearCovers(bool[] rowsCovered, bool[] colsCovered)
 		{// Method that writes false for boolean arrays
-			ArgumentNullException.ThrowIfNull(rowsCovered);
-			ArgumentNullException.ThrowIfNull(colsCovered);
-
 			if (rowsCovered.Length == colsCovered.Length)
 				for (int i = 0; i < rowsCovered.Length; i++)
 				{// If they are the same length
