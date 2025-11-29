@@ -39,8 +39,14 @@ namespace TaxiAssignment.Server.Services
 			"Ford", "Chevrolet", "Opel", "BMW", "Mitsubishi", "Mazda", "Honda", "Peugeot",
 			"Citroen"
 		];
-		private readonly string[] _carColors = ["White", "Black", "Gray", "Silver", "Blue", "Red"];
-		private readonly int[] _carSeatsCounts = [4, 4, 4, 4, 4, 5, 5, 6];
+		private readonly string[] _carColors =
+		[
+			.. Enumerable.Repeat("Black", 10),
+			.. Enumerable.Repeat("Gray", 9),
+			.. Enumerable.Repeat("White", 8),
+			.. new[] { "Silver", "Blue", "Red" },
+		];
+		private readonly int[] _carSeatsCounts = [.. Enumerable.Repeat(4, 18), 3, 6];
 
 		private readonly string[] _carRegionCodes =
 		[
@@ -80,7 +86,7 @@ namespace TaxiAssignment.Server.Services
 
 			for (int i = 0; i < count; i++)
 			{
-				bool isMale = GenerateRandomBool();
+				bool isMale = GenerateRandomBool(90);
 				string name = GenerateRandomName(isMale);
 				string surname = GenerateRandomSurname(isMale);
 				int age = _random.Next(22, 55);
@@ -100,7 +106,7 @@ namespace TaxiAssignment.Server.Services
 
 			for (int i = 0; i < count; i++)
 			{
-				bool isMale = GenerateRandomBool();
+				bool isMale = GenerateRandomBool(50);
 				string name = GenerateRandomName(isMale);
 				string surname = GenerateRandomSurname(isMale);
 				int age = _random.Next(17, 55);
@@ -112,7 +118,7 @@ namespace TaxiAssignment.Server.Services
 			return clients;
 		}
 
-		private bool GenerateRandomBool() => _random.Next(2) == 0;
+		private bool GenerateRandomBool(int truePercent) => _random.Next(100) < truePercent;
 		private string GenerateRandomName(bool isMale)
 		{
 			if (isMale)
