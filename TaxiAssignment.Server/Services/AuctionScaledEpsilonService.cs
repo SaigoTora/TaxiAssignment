@@ -23,7 +23,7 @@ namespace TaxiAssignment.Server.Services
 			SetMinMax(costs, (i, j) => result[i, j] = costs[i, j]);
 
 			double fillValue = request.FindMax ? _min.Value : _max.Value;
-			IAssignmentService.FillExtraCells(result, fillValue);
+			IAssignmentService.FillExtraCells(result, n, m, fillValue);
 
 			return result;
 		}

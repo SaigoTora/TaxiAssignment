@@ -34,7 +34,7 @@ namespace TaxiAssignment.Server.Services
 							fillValue = costs[i, j];
 					}
 
-			IAssignmentService.FillExtraCells(result, fillValue);
+			IAssignmentService.FillExtraCells(result, n, m, fillValue);
 
 			return result;
 		}
