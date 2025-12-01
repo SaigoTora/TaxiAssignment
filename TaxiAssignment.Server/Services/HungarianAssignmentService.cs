@@ -77,7 +77,7 @@ namespace TaxiAssignment.Server.Services
 						maxValue = costs[i, j];
 				}
 
-			IAssignmentService.FillExtraCells(result, maxValue);
+			IAssignmentService.FillExtraCells(result, n, m, maxValue);
 
 			return result;
 		}
