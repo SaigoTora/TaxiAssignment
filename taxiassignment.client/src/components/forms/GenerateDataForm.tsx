@@ -92,7 +92,7 @@ export default function GenerateDataForm({
 					marginBottom='4'
 					value={inputData.taxiDriversCount ?? ''}
 					min={1}
-					max={10000}
+					max={1250}
 					onChange={e => {
 						const newData = {
 							...inputData,
@@ -114,7 +114,7 @@ export default function GenerateDataForm({
 					marginBottom='6'
 					value={inputData.clientCount ?? ''}
 					min={1}
-					max={10000}
+					max={1250}
 					onChange={e => {
 						const newData = {
 							...inputData,
